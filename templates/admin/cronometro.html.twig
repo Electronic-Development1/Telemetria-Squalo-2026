@@ -1,0 +1,99 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+{% block head_javascript %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div class="col-6">
+        <select class="form-select form-select-sm" aria-label=".form-select-sm example">
+            <option selected>Piloto</option>
+            {% for p in pilotos %}
+            <option value="{{p.id}}">{{p.nombre}}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6" style="padding: 20px;">
+        <div style="padding: 20px;background-color: brown;">
+            <div id="chrono">00:00:00</div>
+            <button id="startBtn">Iniciar</button>
+            <button id="pauseBtn">Pausar</button>
+            <button id="stopBtn">Detener</button>
+        </div>
+
+    </div>
+    <div class="col-6" style="padding: 20px;">
+        <div style="padding: 20px;background-color: brown;">
+
+            <div id="chrono1">00:00:00</div>
+
+            <button id="startBtn1">Iniciar</button>
+            <button id="pauseBtn1">Pausar</button>
+            <button id="stopBtn1">Detener</button>
+        </div>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-6" style="padding: 20px;">
+        <div style="padding: 20px;background-color: cadetblue;">
+
+            <div id="chrono">00:00:00</div>
+
+            <button id="startBtn">Iniciar</button>
+            <button id="pauseBtn">Pausar</button>
+            <button id="stopBtn">Detener</button>
+        </div>
+
+    </div>
+    <div class="col-6" style="padding: 20px;">
+        <div style="padding: 20px;background-color: blueviolet;">
+
+            <div id="chrono1">00:00:00</div>
+
+            <button id="startBtn1">Iniciar</button>
+            <button id="pauseBtn1">Pausar</button>
+            <button id="stopBtn1">Detener</button>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block body_javascript %}
+<script>
+    // 1. Crear una nueva instancia del cronómetro
+    const timer = new easytimer.Timer();
+
+    // 2. Escuchar el evento de actualización de segundos
+    timer.addEventListener('secondsUpdated', function (e) {
+        // Obtener el tiempo formateado como String (HH:MM:SS)
+        document.getElementById('chrono').innerHTML = timer.getTimeValues().toString();
+    });
+
+    // 3. Configurar los botones
+    document.getElementById('startBtn').addEventListener('click', () => {
+        timer.start();
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+        timer.pause();
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+        timer.stop();
+        document.getElementById('chrono').innerHTML = "00:00:00";
+    });
+
+    // Evento opcional: cuando el cronómetro se inicia o reinicia
+    timer.addEventListener('started', function (e) {
+        console.log('Cronómetro iniciado');
+    });
+
+</script>
+
+{% endblock %}

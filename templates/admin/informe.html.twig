@@ -1,0 +1,83 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+{% block head_javascript %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div class="col-6">
+        <select class="form-select form-select-sm" aria-label=".form-select-sm example">
+            <option selected>Piloto</option>
+            {% for p in pilotos %}
+            <option value="{{p.id}}">{{p.nombre}}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12" style="padding: 20px;">
+        <canvas id="chartLine"></canvas>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block body_javascript %}
+<script>
+    const ctx = document.getElementById('chartLine');
+    const myChart = new Chart(ctx, {
+        type: 'line', // Specifies a line chart
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'], // X-axis labels
+            datasets: [{
+                label: 'Carolina ', // Label for the first line
+                data: [65, 59, 80, 81, 56, 55, 40], // Data points for the first line
+                borderColor: 'rgb(255, 99, 132)', // Line color (e.g., red)
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                yAxisID: 'y', // Assign to the default 'y' axis
+            }, {
+                label: 'Yuly', // Label for the second line
+                data: [28, 48, 40, 19, 86, 27, 90], // Data points for the second line
+                borderColor: 'rgb(54, 162, 235)', // Line color (e.g., blue)
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                yAxisID: 'y1', // Assign to a secondary 'y1' axis
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tiempos de Pilotos'
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    // Grid line settings: only want the grid lines for one axis to show up
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                },
+            }
+        }
+    });
+
+
+</script>
+
+{% endblock %}
