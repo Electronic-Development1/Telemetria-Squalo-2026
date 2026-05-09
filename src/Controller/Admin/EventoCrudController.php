@@ -34,8 +34,8 @@ class EventoCrudController extends AbstractCrudController
         return [
             DateField::new('fecha_realizacion'),
             ChoiceField::new('tipo')->setChoices([
-                'Compentencia Interna' => 1,
-                'Competecia Externa' => 2,
+                'Entrenamiento Udea' => 1,
+                'Competencia VTH' => 2,
 
             ]),
             AssociationField::new('pilotos'),
@@ -62,12 +62,15 @@ class EventoCrudController extends AbstractCrudController
     public function addCronometros(AdminContext $context, ManagerRegistry $doctrine): Response
     {
         $em = $doctrine->getManager();
+        $eventoActivo = $context->getEntity()->getInstance();
+
 
         $pilotosRepository = $em->getRepository(Piloto::class);
 
         $pilotos = $pilotosRepository->findAll();
         return $this->render('admin/cronometro.html.twig', [
-            'pilotos' => $pilotos
+            'pilotos' => $pilotos,
+            'eventoActivo' => $eventoActivo
         ]);
     }
 
@@ -79,7 +82,7 @@ class EventoCrudController extends AbstractCrudController
         $pilotosRepository = $em->getRepository(Piloto::class);
 
         $pilotos = $pilotosRepository->findAll();
-        return $this->render('admin/informe.html.twig', [
+        return $this->render('admin/informe .html.twig', [
             'pilotos' => $pilotos
         ]);
     }
