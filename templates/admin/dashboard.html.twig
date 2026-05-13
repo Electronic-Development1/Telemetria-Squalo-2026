@@ -1,9 +1,244 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
+
 {% block head_javascript %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body{
+            background: #0b0b0b;
+        }
+
+        /* HERO */
+        .hero-dashboard{
+            background: linear-gradient(135deg, #0f0f0f, #151515);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .hero-content{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .hero-title{
+            font-size: 35px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .hero-title span{
+            color: #6BEA45;
+        }
+
+        .hero-text{
+            color: #bdbdbd;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .logo-box{
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-box img{
+            width: 220px;
+            max-width: 100%;
+        }
+
+        .team-photo img{
+            width: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0px 5px 25px rgba(0,0,0,0.5);
+        }
+
+        /* CARDS */
+        .dashboard-cards{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card-dashboard{
+            background: #151515;
+            border-radius: 18px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            border-left: 5px solid #6BEA45;
+        }
+
+        .card-dashboard:hover{
+            transform: translateY(-5px);
+        }
+
+        .card-dashboard h4{
+            color: #6BEA45;
+            margin-bottom: 10px;
+        }
+
+        .card-dashboard p{
+            color: #cfcfcf;
+            font-size: 14px;
+        }
+
+        /* STATS */
+        .stats-container{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-box{
+            background: #111;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .stat-number{
+            font-size: 32px;
+            font-weight: bold;
+            color: #6BEA45;
+        }
+
+        .stat-label{
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        @media(max-width:768px){
+            .hero-content,
+            .dashboard-cards,
+            .stats-container{
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 {% endblock %}
 
+
 {% block main %}
-Hello
+
+<div class="container-fluid">
+
+    <!-- HERO PRINCIPAL -->
+    <div class="hero-dashboard">
+
+        <div class="hero-content">
+
+            <!-- TEXTO -->
+            <div>
+                <div class="logo-box">
+                    <img src="./images/LogoEquipo.png" alt="Logo Squalo">
+                </div>
+
+                <h1 class="hero-title">
+                    Bienvenidos al sistema de cronometraje de
+                    <span>Squalo</span>
+                </h1>
+
+                <p class="hero-text">
+                    Este sistema permite registrar y controlar los tiempos
+                    de competencia de nuestros vehículos de tracción humana y eléctrica.
+                    Aquí podrás monitorear tiempos de:
+                    <strong>Meta → Meta</strong>,
+                    <strong>Pits → Pits</strong>,
+                    <strong>Cambio de piloto</strong>
+                    y <strong>registro de daños</strong>.
+                    <br><br>
+                    Nuestro objetivo es optimizar el rendimiento en competencia
+                    mediante análisis de tiempos precisos y toma de decisiones rápidas.
+                </p>
+            </div>
+
+            <!-- FOTO EQUIPO -->
+            <div class="team-photo">
+                <img src="./images/FotoGrupalVTH.jpeg" alt="Equipo Squalo">
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- CARDS INFORMATIVAS -->
+    <div class="dashboard-cards">
+
+        <div class="card-dashboard">
+            <h4>🏁 Meta → Meta</h4>
+            <p>
+                Registra el tiempo total de cada vuelta realizada durante la competencia.
+            </p>
+        </div>
+
+        <div class="card-dashboard">
+            <h4>🔧 Pits → Pits</h4>
+            <p>
+                Controla el tiempo invertido en entradas y salidas de pits.
+            </p>
+        </div>
+
+        <div class="card-dashboard">
+            <h4>👤 Cambio de piloto</h4>
+            <p>
+                Permite medir el tiempo de transición entre pilotos.
+            </p>
+        </div>
+
+        <div class="card-dashboard">
+            <h4>⚠ Registro de daños</h4>
+            <p>
+                Lleva control sobre incidentes o fallos durante la carrera.
+            </p>
+        </div>
+
+        <div class="card-dashboard">
+            <h4>📊 Análisis de datos</h4>
+            <p>
+                Consulta métricas para mejorar rendimiento competitivo.
+            </p>
+        </div>
+
+        <div class="card-dashboard">
+            <h4>🚴 Competencias</h4>
+            <p>
+                Administra eventos y pilotos activos dentro del sistema.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- ESTADISTICAS -->
+    <div class="stats-container">
+
+        <div class="stat-box">
+            <div class="stat-number">4</div>
+            <div class="stat-label">Cronómetros activos</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-number">+8</div>
+            <div class="stat-label">Pilotos registrados</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-number">99.8%</div>
+            <div class="stat-label">Precisión de monitoreo</div>
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

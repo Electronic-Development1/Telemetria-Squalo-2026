@@ -1,80 +1,336 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
-{% block head_javascript %}
-{{ parent() }}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+{% block head_javascript %}
+    {{ parent() }}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+
+    <style>
+        body {
+            background: #0b0b0b;
+        }
+
+        /* -----------------------------
+           SELECT Y CONTADOR SUPERIOR
+        ------------------------------*/
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .pilot-select {
+            width: 300px;
+        }
+
+        .contador-box {
+            background: #1e1e1e;
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .contador-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background: #2e86ff;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .contador-btn:hover {
+            background: #1d6fe5;
+        }
+
+        /* -----------------------------
+           GRID DE CRONOMETROS
+        ------------------------------*/
+        .chrono-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media(max-width: 768px) {
+            .chrono-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* -----------------------------
+            TARJETA GENERAL
+        ------------------------------*/
+        .chrono-card {
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .chrono-label {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .chrono-display {
+            font-family: 'Courier New', monospace;
+            font-size: 42px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* -----------------------------
+            BOTONES
+        ------------------------------*/
+        .chrono-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-chrono {
+            flex: 1;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-stop {
+            opacity: 0.9;
+        }
+
+        .btn-stop:hover {
+            opacity: 1;
+        }
+
+        /* -----------------------------
+            COLORES DE TARJETAS
+        ------------------------------*/
+
+        /* META */
+        .c-meta {
+            background: #0F6E56;
+        }
+
+        .c-meta .chrono-label {
+            color: #ffffff;
+        }
+
+        .c-meta .chrono-display {
+            background: #0b5643;
+            color: white;
+        }
+
+        .c-meta .btn-start {
+            background: #1fc98a;
+            color: white;
+        }
+
+        .c-meta .btn-stop {
+            background: #094336;
+            color: white;
+        }
+
+        /* PITS */
+        .c-pits {
+            background: #8b5700;
+        }
+
+        .c-pits .chrono-label {
+            color: #fdfdfd;
+        }
+
+        .c-pits .chrono-display {
+            background: #6a4100;
+            color: white;
+        }
+
+        .c-pits .btn-start {
+            background: #f0a500;
+            color: black;
+        }
+
+        .c-pits .btn-stop {
+            background: #5a3500;
+            color: white;
+        }
+
+        /* CAMBIO */
+        .c-cambio {
+            background: #165ca8;
+        }
+
+        .c-cambio .chrono-label {
+            color: #ebebeb;
+        }
+
+        .c-cambio .chrono-display {
+            background: #0e4785;
+            color: white;
+        }
+
+        .c-cambio .btn-start {
+            background: #3d95ff;
+            color: white;
+        }
+
+        .c-cambio .btn-stop {
+            background: #08376b;
+            color: white;
+        }
+
+        /* DAÑOS */
+        .c-danos {
+            background: #a82222;
+        }
+
+        .c-danos .chrono-label {
+            color: #fdfdfd;
+        }
+
+        .c-danos .chrono-display {
+            background: #7e1515;
+            color: white;
+        }
+
+        .c-danos .btn-start {
+            background: #ff4f4f;
+            color: white;
+        }
+
+        .c-danos .btn-stop {
+            background: #5e0d0d;
+            color: white;
+        }
+    </style>
 {% endblock %}
 
+
 {% block main %}
-<div class="row">
-    <div class="col-6">
-        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="piloto">
-            <option selected>Pilotos</option>
-            {% for p in pilotos %}
-            <option value="{{p.id}}">{{p.nombre}}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-6">
-        {{eventoActivo.id}}
-        <button> -</button>
-        Contador
-        <button> +</button>
-    </div>
-</div>
-<div class="row">
-    <div class="col-6" style="padding: 20px;">
-        <p> Cronometro Meta-Meta</p>
-        <div style="padding: 20px;background-color: brown;">
-            <div id="chrono">00:00:00</div>
-            <button id="startMetaMetaBtn">Iniciar</button>
-            <button id="pauseMetaMetaBtn">Pausar</button>
-            <button id="stopMetaMetaBtn">Detener</button>
+
+    <!-- PARTE SUPERIOR -->
+    <div class="top-section">
+
+        <div class="pilot-select">
+            <select class="form-select" id="piloto">
+                <option selected>Seleccionar piloto</option>
+
+                {% for p in pilotos %}
+                    <option value="{{ p.id }}">
+                        {{ p.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="contador-box">
+            <button class="contador-btn">-</button>
+
+            <span>
+                Vuelta: {{ eventoActivo.id }}
+            </span>
+
+            <button class="contador-btn">+</button>
         </div>
 
     </div>
-    <div class="col-6" style="padding: 20px;">
-        <p> Cronometro Pits-Pits</p>
 
-        <div style="padding: 20px;background-color: brown;">
 
-            <div id="chrono1">00:00:00</div>
+    <!-- GRID DE CRONOMETROS -->
+    <div class="chrono-grid">
 
-            <button id="startBtn1">Iniciar</button>
-            <button id="pauseBtn1">Pausar</button>
-            <button id="stopBtn1">Detener</button>
+        <!-- META -->
+        <div class="chrono-card c-meta">
+            <div class="chrono-label">🏁 META → META</div>
+            <div class="chrono-display" id="chronoMeta">00:00:00</div>
+
+            <div class="chrono-buttons">
+                <button class="btn-chrono btn-start">
+                    ▶ Iniciar
+                </button>
+
+                <button class="btn-chrono btn-stop">
+                    ■ Terminar
+                </button>
+            </div>
+        </div>
+
+
+        <!-- PITS -->
+        <div class="chrono-card c-pits">
+            <div class="chrono-label">🔧 PITS → PITS</div>
+            <div class="chrono-display" id="chronoPits">00:00:00</div>
+
+            <div class="chrono-buttons">
+                <button class="btn-chrono btn-start">
+                    ▶ Iniciar
+                </button>
+
+                <button class="btn-chrono btn-stop">
+                    ■ Terminar
+                </button>
+            </div>
+        </div>
+
+
+        <!-- CAMBIO PILOTO -->
+        <div class="chrono-card c-cambio">
+            <div class="chrono-label">👤 CAMBIO DE PILOTO</div>
+            <div class="chrono-display" id="chronoCambio">00:00:00</div>
+
+            <div class="chrono-buttons">
+                <button class="btn-chrono btn-start">
+                    ▶ Iniciar
+                </button>
+
+                <button class="btn-chrono btn-stop">
+                    ■ Terminar
+                </button>
+            </div>
+        </div>
+
+
+        <!-- DAÑOS -->
+        <div class="chrono-card c-danos">
+            <div class="chrono-label">⚠ DAÑOS</div>
+            <div class="chrono-display" id="chronoDanos">00:00:00</div>
+
+            <div class="chrono-buttons">
+                <button class="btn-chrono btn-start">
+                    ▶ Iniciar
+                </button>
+
+                <button class="btn-chrono btn-stop">
+                    ■ Terminar
+                </button>
+            </div>
         </div>
 
     </div>
-</div>
-<div class="row">
-    <div class="col-6" style="padding: 20px;">
-        <p> Cronometro Cambio-Piloto</p>
-        <div style="padding: 20px;background-color: cadetblue;">
-
-            <div id="chrono">00:00:00</div>
-
-            <button id="startBtn">Iniciar</button>
-            <button id="pauseBtn">Pausar</button>
-            <button id="stopBtn">Detener</button>
-        </div>
-
-    </div>
-    <div class="col-6" style="padding: 20px;">
-        <p> Cronometro Daños</p>
-
-        <div style="padding: 20px;background-color: blueviolet;">
-
-            <div id="chrono1">00:00:00</div>
-
-            <button id="startBtn1">Iniciar</button>
-            <button id="pauseBtn1">Pausar</button>
-            <button id="stopBtn1">Detener</button>
-        </div>
-
-    </div>
-</div>
 
 {% endblock %}
 
