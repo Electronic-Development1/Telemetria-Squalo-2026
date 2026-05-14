@@ -12,7 +12,7 @@
         }
 
         /* -----------------------------
-           SELECT Y CONTADOR SUPERIOR
+            SELECT Y CONTADOR SUPERIOR
         ------------------------------*/
         .top-section {
             display: flex;
@@ -56,7 +56,7 @@
         }
 
         /* -----------------------------
-           GRID DE CRONOMETROS
+            GRID DE CRONOMETROS
         ------------------------------*/
         .chrono-grid {
             display: grid;
@@ -248,13 +248,13 @@
         </div>
 
         <div class="contador-box">
-            <button class="contador-btn">-</button>
+            <button class="contador-btn" id = "btnDecrementarContador">-</button>
 
-            <span>
-                Vuelta: {{ eventoActivo.id }}
+            <span id = "labelContador">
+                Vuelta = 1
             </span>
 
-            <button class="contador-btn">+</button>
+            <button class="contador-btn" id = "btnIncrementarContador">+</button>
         </div>
 
     </div>
@@ -269,11 +269,11 @@
             <div class="chrono-display" id="chronoMeta">00:00:00</div>
 
             <div class="chrono-buttons">
-                <button class="btn-chrono btn-start">
+                <button class="btn-chrono btn-start" id="startMetaMetaBtn" onclick="btnStart('Meta')">
                     ▶ Iniciar
                 </button>
 
-                <button class="btn-chrono btn-stop">
+                <button class="btn-chrono btn-stop" onclick="btnStop('Meta')">
                     ■ Terminar
                 </button>
             </div>
@@ -286,11 +286,11 @@
             <div class="chrono-display" id="chronoPits">00:00:00</div>
 
             <div class="chrono-buttons">
-                <button class="btn-chrono btn-start">
+                <button class="btn-chrono btn-start" onclick="btnStart('PITS')">
                     ▶ Iniciar
                 </button>
 
-                <button class="btn-chrono btn-stop">
+                <button class="btn-chrono btn-stop" onclick="btnStop('PITS')">
                     ■ Terminar
                 </button>
             </div>
@@ -303,11 +303,11 @@
             <div class="chrono-display" id="chronoCambio">00:00:00</div>
 
             <div class="chrono-buttons">
-                <button class="btn-chrono btn-start">
+                <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">
                     ▶ Iniciar
                 </button>
 
-                <button class="btn-chrono btn-stop">
+                <button class="btn-chrono btn-stop" onclick="btnStop('Cambio')">
                     ■ Terminar
                 </button>
             </div>
@@ -320,11 +320,11 @@
             <div class="chrono-display" id="chronoDanos">00:00:00</div>
 
             <div class="chrono-buttons">
-                <button class="btn-chrono btn-start">
+                <button class="btn-chrono btn-start" onclick="btnStart('Danos')">
                     ▶ Iniciar
                 </button>
 
-                <button class="btn-chrono btn-stop">
+                <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">
                     ■ Terminar
                 </button>
             </div>
@@ -335,7 +335,28 @@
 {% endblock %}
 
 {% block body_javascript %}
+
 <script>
+    contadorVueltas = 1;
+    document.getElementById('btnDecrementarContador').addEventListener('click', () => {
+        contadorVueltas--;
+        document.getElementById('labelContador').innerHTML = contadorVueltas;
+    });
+
+    document.getElementById('btnIncrementarContador').addEventListener('click', () => {
+        contadorVueltas++;
+        document.getElementById('labelContador').innerHTML = contadorVueltas;
+    });
+    
+    function btnStart(nombreCronometro) {
+        alert(nombreCronometro);
+
+    }
+
+    function btnStop(nombreCronometro) {
+        alert(nombreCronometro);
+    }
+
     // 1. Crear una nueva instancia del cronómetro
     const timer = new easytimer.Timer();
 
@@ -346,12 +367,13 @@
     });
 
     // 3. Configurar los botones
-    document.getElementById('startBtn').addEventListener('click', () => {
-        timer.start();
-    });
-
-    document.getElementById('pauseBtn').addEventListener('click', () => {
-        timer.pause();
+    document.getElementById('startMetaMetaBtn').addEventListener('click', () => {
+        // timer.start();
+        alert($("#piloto").val() + " " + contadorVueltas);
+        $.post('http://example.com/api/registrar/cronometro', { piloto: idPiloto, numeroVuelta: contadorVueltas, nombreCronometro: "Meta-Meta" }, function (respuesta) {
+            alert("éxito");
+            $("#resultado").html(respuesta.cantidad);
+        });
     });
 
     document.getElementById('stopBtn').addEventListener('click', () => {
@@ -369,7 +391,7 @@
     $("#stopMetaMetaBtn").on("click", function () {
         alert($("#piloto").val());
         let idPiloto = ("#piloto").val()
-        $.post('http://example.com/api/registrar/cronometro', { piloto: idPiloto, tipo: 'premium' }, function (respuesta) {
+        $.post('http://example.com/api/registrar/cronometro', { piloto: idPiloto, numeroVuelta: contadorVueltas, nombreCronometro: $("#nombreCronometro").val() }, function (respuesta) {
             alert("éxito");
             $("#resultado").html(respuesta.cantidad);
         });
