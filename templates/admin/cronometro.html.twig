@@ -5,6 +5,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 
     <style>
         body {
@@ -232,172 +233,439 @@
 
 {% block main %}
 
-    <!-- PARTE SUPERIOR -->
-    <div class="top-section">
+<div class="top-section">
 
-        <div class="pilot-select">
-            <select class="form-select" id="piloto">
-                <option selected>Seleccionar piloto</option>
-
-                {% for p in pilotos %}
-                    <option value="{{ p.id }}">
-                        {{ p.nombre }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
+    <!-- TIEMPO TOTAL ARRIBA -->
+    <div style="width:100%; display:flex; justify-content:center; margin-bottom:20px;">
         <div class="contador-box">
-            <button class="contador-btn" id = "btnDecrementarContador">-</button>
-
-            <span id = "labelContador">
-                Vuelta = 1
+            <span id="tiempoCarrera">
+                ⏱ Carrera: 00:00:00
             </span>
-
-            <button class="contador-btn" id = "btnIncrementarContador">+</button>
         </div>
+    </div>
 
+    <!-- PILOTO ACTUAL -->
+    <div class="pilot-select">
+        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+            Piloto actual
+        </label>
+
+        <select class="form-select" id="pilotoActual">
+            <option selected>Seleccionar piloto</option>
+
+            {% for p in pilotos %}
+                <option value="{{ p.id }}">
+                    {{ p.nombre }}
+                </option>
+            {% endfor %}
+        </select>
     </div>
 
 
-    <!-- GRID DE CRONOMETROS -->
-    <div class="chrono-grid">
+    <!-- SIGUIENTE PILOTO -->
+    <div class="pilot-select">
+        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+            Siguiente piloto
+        </label>
 
-        <!-- META -->
-        <div class="chrono-card c-meta">
-            <div class="chrono-label">🏁 META → META</div>
-            <div class="chrono-display" id="chronoMeta">00:00:00</div>
+        <select class="form-select" id="siguientePiloto">
+            <option selected>Seleccionar siguiente piloto</option>
 
-            <div class="chrono-buttons">
-                <button class="btn-chrono btn-start" id="startMetaMetaBtn" onclick="btnStart('Meta')">
-                    ▶ Iniciar
-                </button>
-
-                <button class="btn-chrono btn-stop" onclick="btnStop('Meta')">
-                    ■ Terminar
-                </button>
-            </div>
-        </div>
-
-
-        <!-- PITS -->
-        <div class="chrono-card c-pits">
-            <div class="chrono-label">🔧 PITS → PITS</div>
-            <div class="chrono-display" id="chronoPits">00:00:00</div>
-
-            <div class="chrono-buttons">
-                <button class="btn-chrono btn-start" onclick="btnStart('PITS')">
-                    ▶ Iniciar
-                </button>
-
-                <button class="btn-chrono btn-stop" onclick="btnStop('PITS')">
-                    ■ Terminar
-                </button>
-            </div>
-        </div>
-
-
-        <!-- CAMBIO PILOTO -->
-        <div class="chrono-card c-cambio">
-            <div class="chrono-label">👤 CAMBIO DE PILOTO</div>
-            <div class="chrono-display" id="chronoCambio">00:00:00</div>
-
-            <div class="chrono-buttons">
-                <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">
-                    ▶ Iniciar
-                </button>
-
-                <button class="btn-chrono btn-stop" onclick="btnStop('Cambio')">
-                    ■ Terminar
-                </button>
-            </div>
-        </div>
-
-
-        <!-- DAÑOS -->
-        <div class="chrono-card c-danos">
-            <div class="chrono-label">⚠ DAÑOS</div>
-            <div class="chrono-display" id="chronoDanos">00:00:00</div>
-
-            <div class="chrono-buttons">
-                <button class="btn-chrono btn-start" onclick="btnStart('Danos')">
-                    ▶ Iniciar
-                </button>
-
-                <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">
-                    ■ Terminar
-                </button>
-            </div>
-        </div>
-
+            {% for p in pilotos %}
+                <option value="{{ p.id }}">
+                    {{ p.nombre }}
+                </option>
+            {% endfor %}
+        </select>
     </div>
+
+
+    <!-- VUELTAS -->
+    <div class="contador-box">
+        <span id="labelContador">
+            Vuelta actual: 1
+        </span>
+    </div>
+
+
+    <!-- FINALIZAR EVENTO -->
+    <div class="contador-box">
+        <button
+            onclick="finalizarEvento()"
+            style="
+                background:#ff4d4d;
+                border:none;
+                color:white;
+                padding:10px 20px;
+                border-radius:10px;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            Finalizar evento
+        </button>
+    </div>
+
+</div>
+
+
+<div class="chrono-grid">
+
+    <!-- META -->
+    <div class="chrono-card c-meta">
+        <div class="chrono-label">🏁 META → META</div>
+        <div class="chrono-display" id="chronoMeta">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Meta')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Meta')">
+                ■ Registrar vuelta
+            </button>
+        </div>
+    </div>
+
+
+    <!-- PITS -->
+    <div class="chrono-card c-pits">
+        <div class="chrono-label">🔧 PITS → PITS</div>
+        <div class="chrono-display" id="chronoPits">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('PITS')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('PITS')">
+                ■ Registrar vuelta
+            </button>
+        </div>
+    </div>
+
+
+    <!-- CAMBIO PILOTO -->
+    <div class="chrono-card c-cambio">
+        <div class="chrono-label">👤 CAMBIO DE PILOTO</div>
+        <div class="chrono-display" id="chronoCambio">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Cambio')">
+                ■ Registrar cambio
+            </button>
+        </div>
+    </div>
+
+
+    <!-- DAÑOS -->
+    <div class="chrono-card c-danos">
+        <div class="chrono-label">⚠ DAÑOS</div>
+        <div class="chrono-display" id="chronoDanos">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Danos')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">
+                ■ Terminar
+            </button>
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}
 
+
 {% block body_javascript %}
-
 <script>
-    contadorVueltas = 1;
-    document.getElementById('btnDecrementarContador').addEventListener('click', () => {
-        contadorVueltas--;
-        document.getElementById('labelContador').innerHTML = contadorVueltas;
-    });
 
-    document.getElementById('btnIncrementarContador').addEventListener('click', () => {
-        contadorVueltas++;
-        document.getElementById('labelContador').innerHTML = contadorVueltas;
-    });
-    
-    function btnStart(nombreCronometro) {
-        alert(nombreCronometro);
+let contadorVueltas = 1;
 
+// Timer general de carrera
+let timerCarrera = new easytimer.Timer();
+let carreraIniciada = false;
+
+
+// Cronómetros individuales
+const cronometros = {
+    Meta: {
+        timer: new easytimer.Timer(),
+        display: '#chronoMeta',
+        inicio: null
+    },
+
+    PITS: {
+        timer: new easytimer.Timer(),
+        display: '#chronoPits',
+        inicio: null
+    },
+
+    Cambio: {
+        timer: new easytimer.Timer(),
+        display: '#chronoCambio',
+        inicio: null
+    },
+
+    Danos: {
+        timer: new easytimer.Timer(),
+        display: '#chronoDanos',
+        inicio: null
+    }
+};
+
+
+
+//--------------------------------------
+// RELOJ GENERAL DE CARRERA
+//--------------------------------------
+timerCarrera.addEventListener('secondsUpdated', function () {
+    $("#tiempoCarrera").html(
+        "⏱ Carrera: " + timerCarrera.getTimeValues().toString()
+    );
+});
+
+
+
+//--------------------------------------
+// CONTADOR DE VUELTAS
+//--------------------------------------
+function actualizarContador() {
+    $("#labelContador").html(
+        `Vuelta actual: ${contadorVueltas}`
+    );
+}
+
+
+
+//--------------------------------------
+// ACTUALIZAR VISUALMENTE CRONÓMETROS
+//--------------------------------------
+Object.keys(cronometros).forEach(key => {
+    const item = cronometros[key];
+
+    item.timer.addEventListener('secondsUpdated', function () {
+        $(item.display).html(
+            item.timer.getTimeValues().toString()
+        );
+    });
+});
+
+
+
+//--------------------------------------
+// INICIAR CRONÓMETRO
+//--------------------------------------
+function btnStart(idChrono) {
+
+    const pilotoActual = $("#pilotoActual").val();
+
+    if (!pilotoActual) {
+        alert("Selecciona un piloto actual");
+        return;
     }
 
-    function btnStop(nombreCronometro) {
-        alert(nombreCronometro);
+    const item = cronometros[idChrono];
+
+    if (item.timer.isRunning()) {
+        alert("Este cronómetro ya está corriendo");
+        return;
     }
 
-    // 1. Crear una nueva instancia del cronómetro
-    const timer = new easytimer.Timer();
+    item.inicio = moment().format(
+        'YYYY-MM-DD HH:mm:ss'
+    );
 
-    // 2. Escuchar el evento de actualización de segundos
-    timer.addEventListener('secondsUpdated', function (e) {
-        // Obtener el tiempo formateado como String (HH:MM:SS)
-        document.getElementById('chrono').innerHTML = timer.getTimeValues().toString();
-    });
+    item.timer.start();
 
-    // 3. Configurar los botones
-    document.getElementById('startMetaMetaBtn').addEventListener('click', () => {
-        // timer.start();
-        alert($("#piloto").val() + " " + contadorVueltas);
-        $.post('http://example.com/api/registrar/cronometro', { piloto: idPiloto, numeroVuelta: contadorVueltas, nombreCronometro: "Meta-Meta" }, function (respuesta) {
-            alert("éxito");
-            $("#resultado").html(respuesta.cantidad);
+    // SOLO Meta inicia el reloj general
+    if(idChrono === "Meta" && !carreraIniciada){
+        timerCarrera.start();
+        carreraIniciada = true;
+    }
+
+    console.log("Inicio:", idChrono);
+}
+
+
+
+//--------------------------------------
+// REGISTRAR VUELTA
+//--------------------------------------
+function registrarVuelta(idChrono) {
+
+    const item = cronometros[idChrono];
+
+    const pilotoActual = $("#pilotoActual").val();
+    const pilotoSiguiente = $("#pilotoSiguiente").val();
+
+    if (!item.timer.isRunning()) {
+        alert("El cronómetro no está iniciado");
+        return;
+    }
+
+    if (!pilotoActual) {
+        alert("Selecciona piloto actual");
+        return;
+    }
+
+    const fechaFinal = moment().format(
+        'YYYY-MM-DD HH:mm:ss'
+    );
+
+    const datos = {
+        piloto: pilotoActual,
+        numeroVuelta: contadorVueltas,
+        cronometro: idChrono,
+        fecha_inicio: item.inicio,
+        fecha_final: fechaFinal
+    };
+
+    $.post('/admin/evento/cronometros', datos)
+        .done(function(response) {
+
+            alert(
+                `Vuelta ${contadorVueltas} registrada correctamente`
+            );
+
+            contadorVueltas++;
+            actualizarContador();
+
+            item.timer.reset();
+            $(item.display).html("00:00:00");
+
+            //--------------------------------
+            // Cambio automático de pilotos
+            //--------------------------------
+            if (
+                (idChrono === "Meta" ||
+                    idChrono === "PITS" ||
+                    idChrono === "Cambio")
+                &&
+                pilotoSiguiente
+            ) {
+                $("#pilotoActual").val(pilotoSiguiente);
+                $("#pilotoSiguiente").val("");
+            }
+
+            item.inicio = moment().format(
+                'YYYY-MM-DD HH:mm:ss'
+            );
+
+            item.timer.start();
+        })
+        .fail(function() {
+            alert("Error guardando vuelta");
         });
-    });
-
-    document.getElementById('stopBtn').addEventListener('click', () => {
-        timer.stop();
-        document.getElementById('chrono').innerHTML = "00:00:00";
-    });
-
-    // Evento opcional: cuando el cronómetro se inicia o reinicia
-    timer.addEventListener('started', function (e) {
-        console.log('Cronómetro iniciado');
-    });
+}
 
 
 
-    $("#stopMetaMetaBtn").on("click", function () {
-        alert($("#piloto").val());
-        let idPiloto = ("#piloto").val()
-        $.post('http://example.com/api/registrar/cronometro', { piloto: idPiloto, numeroVuelta: contadorVueltas, nombreCronometro: $("#nombreCronometro").val() }, function (respuesta) {
-            alert("éxito");
-            $("#resultado").html(respuesta.cantidad);
+//--------------------------------------
+// TERMINAR CAMBIO Y DAÑOS
+//--------------------------------------
+function btnStop(idChrono) {
+
+    const item = cronometros[idChrono];
+    const pilotoActual = $("#pilotoActual").val();
+
+    if (!item.timer.isRunning()) {
+        alert("El cronómetro no está en marcha");
+        return;
+    }
+
+    item.timer.stop();
+
+    const fechaFinal = moment().format(
+        'YYYY-MM-DD HH:mm:ss'
+    );
+
+    const datos = {
+        piloto: pilotoActual,
+        numeroVuelta: contadorVueltas,
+        cronometro: idChrono,
+        fecha_inicio: item.inicio,
+        fecha_final: fechaFinal
+    };
+
+    $.post('/admin/evento/cronometros', datos)
+        .done(function(response) {
+
+            alert(`${idChrono} registrado correctamente`);
+
+            item.timer.reset();
+            $(item.display).html("00:00:00");
+        })
+        .fail(function() {
+            alert("Error guardando datos");
+        });
+}
+
+
+
+//--------------------------------------
+// TERMINAR EVENTO
+//--------------------------------------
+function terminarEvento() {
+
+    if(confirm("¿Seguro que deseas finalizar el evento?")) {
+
+        //--------------------------------
+        // DETENER TODOS LOS CRONÓMETROS
+        //--------------------------------
+        Object.keys(cronometros).forEach(key => {
+            const item = cronometros[key];
+
+            if(item.timer.isRunning()){
+                item.timer.stop();
+            }
+
+            // destruir tiempo acumulado
+            item.timer = new easytimer.Timer();
+
+            // volver a registrar actualización visual
+            item.timer.addEventListener('secondsUpdated', function () {
+                $(item.display).html(
+                    item.timer.getTimeValues().toString()
+                );
+            });
+
+            // pantalla en cero
+            $(item.display).html("00:00:00");
+
+            item.inicio = null;
         });
 
-    });
+
+        //--------------------------------
+        // DETENER RELOJ GENERAL
+        //--------------------------------
+        if(timerCarrera.isRunning()){
+            timerCarrera.stop();
+        }
+
+        
+        //--------------------------------
+        // LIMPIAR PILOTOS
+        //--------------------------------
+        $("#pilotoActual").val("");
+        $("#pilotoSiguiente").val("");
+
+
+        //--------------------------------
+        // REINICIAR ESTADO
+        //--------------------------------
+        carreraIniciada = false;
+
+        alert("Evento finalizado correctamente");
+    }
+}
 
 </script>
-
 {% endblock %}
