@@ -8,13 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 
     <style>
-        body {
-            background: #0b0b0b;
-        }
+        body { background: #0b0b0b; }
 
-        /* -----------------------------
-            SELECT Y CONTADOR SUPERIOR
-        ------------------------------*/
         .top-section {
             display: flex;
             justify-content: space-between;
@@ -24,9 +19,7 @@
             flex-wrap: wrap;
         }
 
-        .pilot-select {
-            width: 300px;
-        }
+        .pilot-select { width: 300px; }
 
         .contador-box {
             background: #1e1e1e;
@@ -39,26 +32,6 @@
             font-weight: bold;
         }
 
-        .contador-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 10px;
-            background: #2e86ff;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .contador-btn:hover {
-            background: #1d6fe5;
-        }
-
-        /* -----------------------------
-            GRID DE CRONOMETROS
-        ------------------------------*/
         .chrono-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -66,14 +39,9 @@
         }
 
         @media(max-width: 768px) {
-            .chrono-grid {
-                grid-template-columns: 1fr;
-            }
+            .chrono-grid { grid-template-columns: 1fr; }
         }
 
-        /* -----------------------------
-            TARJETA GENERAL
-        ------------------------------*/
         .chrono-card {
             border-radius: 16px;
             padding: 20px;
@@ -98,13 +66,7 @@
             margin-bottom: 15px;
         }
 
-        /* -----------------------------
-            BOTONES
-        ------------------------------*/
-        .chrono-buttons {
-            display: flex;
-            gap: 12px;
-        }
+        .chrono-buttons { display: flex; gap: 12px; }
 
         .btn-chrono {
             flex: 1;
@@ -116,409 +78,169 @@
             transition: 0.3s;
         }
 
-        .btn-start:hover {
-            transform: scale(1.03);
-        }
+        .btn-start:hover { transform: scale(1.03); }
+        .btn-stop { opacity: 0.9; }
 
-        .btn-stop {
-            opacity: 0.9;
-        }
+        /* Colores */
+        .c-meta { background: #0F6E56; }
+        .c-meta .chrono-display { background: #0b5643; color: white; }
+        .c-meta .btn-start { background: #1fc98a; color: white; }
+        .c-meta .btn-stop { background: #094336; color: white; }
 
-        .btn-stop:hover {
-            opacity: 1;
-        }
+        .c-pits { background: #8b5700; }
+        .c-pits .chrono-display { background: #6a4100; color: white; }
+        .c-pits .btn-start { background: #f0a500; color: black; }
+        .c-pits .btn-stop { background: #5a3500; color: white; }
 
-        /* -----------------------------
-            COLORES DE TARJETAS
-        ------------------------------*/
+        .c-cambio { background: #165ca8; }
+        .c-cambio .chrono-display { background: #0e4785; color: white; }
+        .c-cambio .btn-start { background: #3d95ff; color: white; }
+        .c-cambio .btn-stop { background: #08376b; color: white; }
 
-        /* META */
-        .c-meta {
-            background: #0F6E56;
-        }
-
-        .c-meta .chrono-label {
-            color: #ffffff;
-        }
-
-        .c-meta .chrono-display {
-            background: #0b5643;
-            color: white;
-        }
-
-        .c-meta .btn-start {
-            background: #1fc98a;
-            color: white;
-        }
-
-        .c-meta .btn-stop {
-            background: #094336;
-            color: white;
-        }
-
-        /* PITS */
-        .c-pits {
-            background: #8b5700;
-        }
-
-        .c-pits .chrono-label {
-            color: #fdfdfd;
-        }
-
-        .c-pits .chrono-display {
-            background: #6a4100;
-            color: white;
-        }
-
-        .c-pits .btn-start {
-            background: #f0a500;
-            color: black;
-        }
-
-        .c-pits .btn-stop {
-            background: #5a3500;
-            color: white;
-        }
-
-        /* CAMBIO */
-        .c-cambio {
-            background: #165ca8;
-        }
-
-        .c-cambio .chrono-label {
-            color: #ebebeb;
-        }
-
-        .c-cambio .chrono-display {
-            background: #0e4785;
-            color: white;
-        }
-
-        .c-cambio .btn-start {
-            background: #3d95ff;
-            color: white;
-        }
-
-        .c-cambio .btn-stop {
-            background: #08376b;
-            color: white;
-        }
-
-        /* DAÑOS */
-        .c-danos {
-            background: #a82222;
-        }
-
-        .c-danos .chrono-label {
-            color: #fdfdfd;
-        }
-
-        .c-danos .chrono-display {
-            background: #7e1515;
-            color: white;
-        }
-
-        .c-danos .btn-start {
-            background: #ff4f4f;
-            color: white;
-        }
-
-        .c-danos .btn-stop {
-            background: #5e0d0d;
-            color: white;
-        }
+        .c-danos { background: #a82222; }
+        .c-danos .chrono-display { background: #7e1515; color: white; }
+        .c-danos .btn-start { background: #ff4f4f; color: white; }
+        .c-danos .btn-stop { background: #5e0d0d; color: white; }
     </style>
 {% endblock %}
 
-
 {% block main %}
-
 <div class="top-section">
-
-    <!-- TIEMPO TOTAL ARRIBA -->
     <div style="width:100%; display:flex; justify-content:center; margin-bottom:20px;">
         <div class="contador-box">
-            <span id="tiempoCarrera">
-                ⏱ Carrera: 00:00:00
-            </span>
+            <span id="tiempoCarrera">⏱ Carrera: 00:00:00</span>
         </div>
     </div>
 
-    <!-- PILOTO ACTUAL -->
     <div class="pilot-select">
-        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
-            Piloto actual
-        </label>
-
+        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">Piloto actual</label>
         <select class="form-select" id="pilotoActual">
-            <option selected>Seleccionar piloto</option>
-
+            <option value="">Seleccionar piloto</option>
             {% for p in pilotos %}
-                <option value="{{ p.id }}">
-                    {{ p.nombre }}
-                </option>
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
             {% endfor %}
         </select>
     </div>
 
-
-    <!-- SIGUIENTE PILOTO -->
     <div class="pilot-select">
-        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
-            Siguiente piloto
-        </label>
-
+        <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">Siguiente piloto</label>
         <select class="form-select" id="siguientePiloto">
-            <option selected>Seleccionar siguiente piloto</option>
-
+            <option value="">Seleccionar siguiente piloto</option>
             {% for p in pilotos %}
-                <option value="{{ p.id }}">
-                    {{ p.nombre }}
-                </option>
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
             {% endfor %}
         </select>
     </div>
 
-
-    <!-- VUELTAS -->
     <div class="contador-box">
-        <span id="labelContador">
-            Vuelta actual: 1
-        </span>
+        <span id="labelContador">Vuelta actual: 1</span>
     </div>
 
-
-    <!-- FINALIZAR EVENTO -->
     <div class="contador-box">
-        <button
-            onclick="finalizarEvento()"
-            style="
-                background:#ff4d4d;
-                border:none;
-                color:white;
-                padding:10px 20px;
-                border-radius:10px;
-                font-weight:bold;
-                cursor:pointer;
-            "
-        >
+        <button onclick="terminarEvento()" style="background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">
             Finalizar evento
         </button>
     </div>
-
 </div>
 
-
 <div class="chrono-grid">
-
     <!-- META -->
     <div class="chrono-card c-meta">
         <div class="chrono-label">🏁 META → META</div>
         <div class="chrono-display" id="chronoMeta">00:00:00</div>
-
         <div class="chrono-buttons">
-            <button class="btn-chrono btn-start" onclick="btnStart('Meta')">
-                ▶ Iniciar
-            </button>
-
-            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Meta')">
-                ■ Registrar vuelta
-            </button>
+            <button class="btn-chrono btn-start" onclick="btnStart('Meta')">▶ Iniciar</button>
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Meta')">■ Registrar vuelta</button>
         </div>
     </div>
-
 
     <!-- PITS -->
     <div class="chrono-card c-pits">
         <div class="chrono-label">🔧 PITS → PITS</div>
         <div class="chrono-display" id="chronoPits">00:00:00</div>
-
         <div class="chrono-buttons">
-            <button class="btn-chrono btn-start" onclick="btnStart('PITS')">
-                ▶ Iniciar
-            </button>
-
-            <button class="btn-chrono btn-stop" onclick="registrarVuelta('PITS')">
-                ■ Registrar vuelta
-            </button>
+            <button class="btn-chrono btn-start" onclick="btnStart('PITS')">▶ Iniciar</button>
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('PITS')">■ Registrar vuelta</button>
         </div>
     </div>
-
 
     <!-- CAMBIO PILOTO -->
     <div class="chrono-card c-cambio">
         <div class="chrono-label">👤 CAMBIO DE PILOTO</div>
         <div class="chrono-display" id="chronoCambio">00:00:00</div>
-
         <div class="chrono-buttons">
-            <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">
-                ▶ Iniciar
-            </button>
-
-            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Cambio')">
-                ■ Registrar cambio
-            </button>
+            <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">▶ Iniciar</button>
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Cambio')">■ Registrar cambio</button>
         </div>
     </div>
-
 
     <!-- DAÑOS -->
     <div class="chrono-card c-danos">
         <div class="chrono-label">⚠ DAÑOS</div>
         <div class="chrono-display" id="chronoDanos">00:00:00</div>
-
         <div class="chrono-buttons">
-            <button class="btn-chrono btn-start" onclick="btnStart('Danos')">
-                ▶ Iniciar
-            </button>
-
-            <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">
-                ■ Terminar
-            </button>
+            <button class="btn-chrono btn-start" onclick="btnStart('Danos')">▶ Iniciar</button>
+            <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">■ Terminar</button>
         </div>
     </div>
-
 </div>
-
 {% endblock %}
-
 
 {% block body_javascript %}
 <script>
-
 let contadorVueltas = 1;
-
-// Timer general de carrera
 let timerCarrera = new easytimer.Timer();
 let carreraIniciada = false;
 
-
-// Cronómetros individuales
 const cronometros = {
-    Meta: {
-        timer: new easytimer.Timer(),
-        display: '#chronoMeta',
-        inicio: null
-    },
-
-    PITS: {
-        timer: new easytimer.Timer(),
-        display: '#chronoPits',
-        inicio: null
-    },
-
-    Cambio: {
-        timer: new easytimer.Timer(),
-        display: '#chronoCambio',
-        inicio: null
-    },
-
-    Danos: {
-        timer: new easytimer.Timer(),
-        display: '#chronoDanos',
-        inicio: null
-    }
+    Meta: { timer: new easytimer.Timer(), display: '#chronoMeta', inicio: null },
+    PITS: { timer: new easytimer.Timer(), display: '#chronoPits', inicio: null },
+    Cambio: { timer: new easytimer.Timer(), display: '#chronoCambio', inicio: null },
+    Danos: { timer: new easytimer.Timer(), display: '#chronoDanos', inicio: null }
 };
 
-
-
-//--------------------------------------
-// RELOJ GENERAL DE CARRERA
-//--------------------------------------
-timerCarrera.addEventListener('secondsUpdated', function () {
-    $("#tiempoCarrera").html(
-        "⏱ Carrera: " + timerCarrera.getTimeValues().toString()
-    );
+// Reloj Carrera
+timerCarrera.addEventListener('secondsUpdated', () => {
+    $("#tiempoCarrera").html("⏱ Carrera: " + timerCarrera.getTimeValues().toString());
 });
 
-
-
-//--------------------------------------
-// CONTADOR DE VUELTAS
-//--------------------------------------
-function actualizarContador() {
-    $("#labelContador").html(
-        `Vuelta actual: ${contadorVueltas}`
-    );
-}
-
-
-
-//--------------------------------------
-// ACTUALIZAR VISUALMENTE CRONÓMETROS
-//--------------------------------------
+// Relojes Individuales
 Object.keys(cronometros).forEach(key => {
     const item = cronometros[key];
-
-    item.timer.addEventListener('secondsUpdated', function () {
-        $(item.display).html(
-            item.timer.getTimeValues().toString()
-        );
+    item.timer.addEventListener('secondsUpdated', () => {
+        $(item.display).html(item.timer.getTimeValues().toString());
     });
 });
 
+function actualizarContador() {
+    $("#labelContador").html(`Vuelta actual: ${contadorVueltas}`);
+}
 
-
-//--------------------------------------
-// INICIAR CRONÓMETRO
-//--------------------------------------
 function btnStart(idChrono) {
-
     const pilotoActual = $("#pilotoActual").val();
-
-    if (!pilotoActual) {
-        alert("Selecciona un piloto actual");
-        return;
-    }
+    if (!pilotoActual) { alert("Selecciona un piloto actual"); return; }
 
     const item = cronometros[idChrono];
+    if (item.timer.isRunning()) return;
 
-    if (item.timer.isRunning()) {
-        alert("Este cronómetro ya está corriendo");
-        return;
-    }
-
-    item.inicio = moment().format(
-        'YYYY-MM-DD HH:mm:ss'
-    );
-
+    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
     item.timer.start();
 
-    // SOLO Meta inicia el reloj general
     if(idChrono === "Meta" && !carreraIniciada){
         timerCarrera.start();
         carreraIniciada = true;
     }
-
-    console.log("Inicio:", idChrono);
 }
 
-
-
-//--------------------------------------
-// REGISTRAR VUELTA
-//--------------------------------------
 function registrarVuelta(idChrono) {
-
     const item = cronometros[idChrono];
-
     const pilotoActual = $("#pilotoActual").val();
-    const pilotoSiguiente = $("#pilotoSiguiente").val();
+    const pilotoSiguiente = $("#siguientePiloto").val();
 
-    if (!item.timer.isRunning()) {
-        alert("El cronómetro no está iniciado");
-        return;
-    }
+    if (!item.timer.isRunning()) { alert("El cronómetro no está iniciado"); return; }
+    if (!pilotoActual) { alert("Selecciona piloto actual"); return; }
 
-    if (!pilotoActual) {
-        alert("Selecciona piloto actual");
-        return;
-    }
-
-    const fechaFinal = moment().format(
-        'YYYY-MM-DD HH:mm:ss'
-    );
-
+    const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
     const datos = {
         piloto: pilotoActual,
         numeroVuelta: contadorVueltas,
@@ -528,63 +250,52 @@ function registrarVuelta(idChrono) {
     };
 
     $.post('/admin/evento/cronometros', datos)
-        .done(function(response) {
-
-            alert(
-                `Vuelta ${contadorVueltas} registrada correctamente`
-            );
-
+        .done(function() {
             contadorVueltas++;
             actualizarContador();
 
-            item.timer.reset();
-            $(item.display).html("00:00:00");
-
-            //--------------------------------
-            // Cambio automático de pilotos
-            //--------------------------------
-            if (
-                (idChrono === "Meta" ||
-                    idChrono === "PITS" ||
-                    idChrono === "Cambio")
-                &&
-                pilotoSiguiente
-            ) {
+            // Lógica de intercambio: Siguiente pasa a ser Actual
+            // Solo Meta y PITS pueden hacer cambio automático de piloto
+            if ((idChrono === "Meta" || idChrono === "PITS") && pilotoSiguiente && pilotoSiguiente !== "") {
                 $("#pilotoActual").val(pilotoSiguiente);
-                $("#pilotoSiguiente").val("");
-            }
-
-            item.inicio = moment().format(
-                'YYYY-MM-DD HH:mm:ss'
-            );
-
-            item.timer.start();
-        })
-        .fail(function() {
-            alert("Error guardando vuelta");
-        });
+                $("#siguientePiloto").val("");
 }
 
+// Meta y PITS siguen corriendo automáticamente
+if (idChrono === "Meta" || idChrono === "PITS") {
+    item.timer.reset();
+    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+    item.timer.start();
+}
 
+// Cambio se detiene y queda en cero
+if (idChrono === "Cambio") {
+    item.timer.stop();
 
-//--------------------------------------
-// TERMINAR CAMBIO Y DAÑOS
-//--------------------------------------
+    // crear un nuevo timer limpio
+    item.timer = new easytimer.Timer();
+
+    item.timer.addEventListener('secondsUpdated', () => {
+        $(item.display).html(item.timer.getTimeValues().toString());
+    });
+
+    item.inicio = null;
+    $(item.display).html("00:00:00");
+}
+
+        })
+        .fail(() => alert("Error guardando vuelta"));
+}
+
 function btnStop(idChrono) {
-
     const item = cronometros[idChrono];
     const pilotoActual = $("#pilotoActual").val();
 
-    if (!item.timer.isRunning()) {
-        alert("El cronómetro no está en marcha");
-        return;
-    }
+    if (!item.timer.isRunning()) return;
 
     item.timer.stop();
 
-    const fechaFinal = moment().format(
-        'YYYY-MM-DD HH:mm:ss'
-    );
+    const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
 
     const datos = {
         piloto: pilotoActual,
@@ -595,30 +306,32 @@ function btnStop(idChrono) {
     };
 
     $.post('/admin/evento/cronometros', datos)
-        .done(function(response) {
+        .done(() => {
 
-            alert(`${idChrono} registrado correctamente`);
+            // destruir timer actual y crear uno nuevo
+            item.timer = new easytimer.Timer();
 
-            item.timer.reset();
+            item.timer.addEventListener('secondsUpdated', () => {
+                $(item.display).html(item.timer.getTimeValues().toString());
+            });
+
+            item.inicio = null;
             $(item.display).html("00:00:00");
         })
-        .fail(function() {
-            alert("Error guardando datos");
-        });
+        .fail(() => alert("Error guardando daños"));
 }
 
-
-
-//--------------------------------------
-// TERMINAR EVENTO
-//--------------------------------------
 function terminarEvento() {
-
     if(confirm("¿Seguro que deseas finalizar el evento?")) {
 
-        //--------------------------------
-        // DETENER TODOS LOS CRONÓMETROS
-        //--------------------------------
+        // Guardar datos finales
+        const tiempoTotalCarrera = timerCarrera.getTimeValues().toString();
+        const totalVueltas = contadorVueltas - 1;
+
+        console.log("Tiempo total:", tiempoTotalCarrera);
+        console.log("Total vueltas:", totalVueltas);
+
+        // Detener y resetear cronómetros individuales
         Object.keys(cronometros).forEach(key => {
             const item = cronometros[key];
 
@@ -626,46 +339,37 @@ function terminarEvento() {
                 item.timer.stop();
             }
 
-            // destruir tiempo acumulado
-            item.timer = new easytimer.Timer();
-
-            // volver a registrar actualización visual
-            item.timer.addEventListener('secondsUpdated', function () {
-                $(item.display).html(
-                    item.timer.getTimeValues().toString()
-                );
-            });
-
-            // pantalla en cero
-            $(item.display).html("00:00:00");
+            item.timer.reset();
+            item.timer.stop();
 
             item.inicio = null;
+
+            $(item.display).html("00:00:00");
         });
 
-
-        //--------------------------------
-        // DETENER RELOJ GENERAL
-        //--------------------------------
+        // SOLO detener cronómetro principal (sin resetearlo)
         if(timerCarrera.isRunning()){
             timerCarrera.stop();
         }
 
-        
-        //--------------------------------
-        // LIMPIAR PILOTOS
-        //--------------------------------
+        // Mantener visible el tiempo final
+        $("#tiempoCarrera").html("⏱ Carrera: " + tiempoTotalCarrera);
+
+        // Mantener visible la cantidad final de vueltas
+        $("#labelContador").html("Total vueltas: " + totalVueltas);
+
+        // Limpiar pilotos
         $("#pilotoActual").val("");
-        $("#pilotoSiguiente").val("");
+        $("#siguientePiloto").val("");
 
-
-        //--------------------------------
-        // REINICIAR ESTADO
-        //--------------------------------
         carreraIniciada = false;
 
-        alert("Evento finalizado correctamente");
+        alert(
+            "Evento finalizado\n\n" +
+            "Tiempo total: " + tiempoTotalCarrera +
+            "\nTotal vueltas: " + totalVueltas
+        );
     }
 }
-
 </script>
 {% endblock %}
