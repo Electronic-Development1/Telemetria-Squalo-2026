@@ -1,107 +1,177 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 
 {% block head_javascript %}
-    {{ parent() }}
+{{ parent() }}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 
-    <style>
-        body { background: #0b0b0b; }
+<style>
+    body {
+        background: #0b0b0b;
+    }
 
-        .top-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
+    .top-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
 
-        .pilot-select { width: 300px; }
+    .pilot-select {
+        width: 300px;
+    }
 
-        .contador-box {
-            background: #1e1e1e;
-            padding: 12px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: white;
-            font-weight: bold;
-        }
+    .contador-box {
+        background: #1e1e1e;
+        padding: 12px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: white;
+        font-weight: bold;
+    }
 
+    .chrono-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    @media(max-width: 768px) {
         .chrono-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr;
         }
+    }
 
-        @media(max-width: 768px) {
-            .chrono-grid { grid-template-columns: 1fr; }
-        }
+    .chrono-card {
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+    }
 
-        .chrono-card {
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
-        }
+    .chrono-label {
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
 
-        .chrono-label {
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
+    .chrono-display {
+        font-family: 'Courier New', monospace;
+        font-size: 42px;
+        font-weight: bold;
+        text-align: center;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
 
-        .chrono-display {
-            font-family: 'Courier New', monospace;
-            font-size: 42px;
-            font-weight: bold;
-            text-align: center;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
+    .chrono-buttons {
+        display: flex;
+        gap: 12px;
+    }
 
-        .chrono-buttons { display: flex; gap: 12px; }
+    .btn-chrono {
+        flex: 1;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-        .btn-chrono {
-            flex: 1;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+    .btn-start:hover {
+        transform: scale(1.03);
+    }
 
-        .btn-start:hover { transform: scale(1.03); }
-        .btn-stop { opacity: 0.9; }
+    .btn-stop {
+        opacity: 0.9;
+    }
 
-        /* Colores */
-        .c-meta { background: #0F6E56; }
-        .c-meta .chrono-display { background: #0b5643; color: white; }
-        .c-meta .btn-start { background: #1fc98a; color: white; }
-        .c-meta .btn-stop { background: #094336; color: white; }
+    /* Colores */
+    .c-meta {
+        background: #0F6E56;
+    }
 
-        .c-pits { background: #8b5700; }
-        .c-pits .chrono-display { background: #6a4100; color: white; }
-        .c-pits .btn-start { background: #f0a500; color: black; }
-        .c-pits .btn-stop { background: #5a3500; color: white; }
+    .c-meta .chrono-display {
+        background: #0b5643;
+        color: white;
+    }
 
-        .c-cambio { background: #165ca8; }
-        .c-cambio .chrono-display { background: #0e4785; color: white; }
-        .c-cambio .btn-start { background: #3d95ff; color: white; }
-        .c-cambio .btn-stop { background: #08376b; color: white; }
+    .c-meta .btn-start {
+        background: #1fc98a;
+        color: white;
+    }
 
-        .c-danos { background: #a82222; }
-        .c-danos .chrono-display { background: #7e1515; color: white; }
-        .c-danos .btn-start { background: #ff4f4f; color: white; }
-        .c-danos .btn-stop { background: #5e0d0d; color: white; }
-    </style>
+    .c-meta .btn-stop {
+        background: #094336;
+        color: white;
+    }
+
+    .c-pits {
+        background: #8b5700;
+    }
+
+    .c-pits .chrono-display {
+        background: #6a4100;
+        color: white;
+    }
+
+    .c-pits .btn-start {
+        background: #f0a500;
+        color: black;
+    }
+
+    .c-pits .btn-stop {
+        background: #5a3500;
+        color: white;
+    }
+
+    .c-cambio {
+        background: #165ca8;
+    }
+
+    .c-cambio .chrono-display {
+        background: #0e4785;
+        color: white;
+    }
+
+    .c-cambio .btn-start {
+        background: #3d95ff;
+        color: white;
+    }
+
+    .c-cambio .btn-stop {
+        background: #08376b;
+        color: white;
+    }
+
+    .c-danos {
+        background: #a82222;
+    }
+
+    .c-danos .chrono-display {
+        background: #7e1515;
+        color: white;
+    }
+
+    .c-danos .btn-start {
+        background: #ff4f4f;
+        color: white;
+    }
+
+    .c-danos .btn-stop {
+        background: #5e0d0d;
+        color: white;
+    }
+</style>
 {% endblock %}
 
 {% block main %}
@@ -117,7 +187,7 @@
         <select class="form-select" id="pilotoActual">
             <option value="">Seleccionar piloto</option>
             {% for p in pilotos %}
-                <option value="{{ p.id }}">{{ p.nombre }}</option>
+            <option value="{{ p.id }}">{{ p.nombre }}</option>
             {% endfor %}
         </select>
     </div>
@@ -127,7 +197,7 @@
         <select class="form-select" id="siguientePiloto">
             <option value="">Seleccionar siguiente piloto</option>
             {% for p in pilotos %}
-                <option value="{{ p.id }}">{{ p.nombre }}</option>
+            <option value="{{ p.id }}">{{ p.nombre }}</option>
             {% endfor %}
         </select>
     </div>
@@ -137,7 +207,8 @@
     </div>
 
     <div class="contador-box">
-        <button onclick="terminarEvento()" style="background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">
+        <button onclick="terminarEvento()"
+            style="background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">
             Finalizar evento
         </button>
     </div>
@@ -188,188 +259,193 @@
 
 {% block body_javascript %}
 <script>
-let contadorVueltas = 1;
-let timerCarrera = new easytimer.Timer();
-let carreraIniciada = false;
+    let contadorVueltas = 1;
+    let timerCarrera = new easytimer.Timer();
+    let carreraIniciada = false;
+    const urlCompleta =  'http://localhost/squalo/public/index.php/cronometros/api/timer';
 
-const cronometros = {
-    Meta: { timer: new easytimer.Timer(), display: '#chronoMeta', inicio: null },
-    PITS: { timer: new easytimer.Timer(), display: '#chronoPits', inicio: null },
-    Cambio: { timer: new easytimer.Timer(), display: '#chronoCambio', inicio: null },
-    Danos: { timer: new easytimer.Timer(), display: '#chronoDanos', inicio: null }
-};
+    const eventoActivo = '{{eventoActivo}}';
 
-// Reloj Carrera
-timerCarrera.addEventListener('secondsUpdated', () => {
-    $("#tiempoCarrera").html("⏱ Carrera: " + timerCarrera.getTimeValues().toString());
-});
+    const cronometros = {
+        Meta: { timer: new easytimer.Timer(), display: '#chronoMeta', inicio: null },
+        PITS: { timer: new easytimer.Timer(), display: '#chronoPits', inicio: null },
+        Cambio: { timer: new easytimer.Timer(), display: '#chronoCambio', inicio: null },
+        Danos: { timer: new easytimer.Timer(), display: '#chronoDanos', inicio: null }
+    };
 
-// Relojes Individuales
-Object.keys(cronometros).forEach(key => {
-    const item = cronometros[key];
-    item.timer.addEventListener('secondsUpdated', () => {
-        $(item.display).html(item.timer.getTimeValues().toString());
+    // Reloj Carrera
+    timerCarrera.addEventListener('secondsUpdated', () => {
+        $("#tiempoCarrera").html("⏱ Carrera: " + timerCarrera.getTimeValues().toString());
     });
-});
 
-function actualizarContador() {
-    $("#labelContador").html(`Vuelta actual: ${contadorVueltas}`);
-}
+    // Relojes Individuales
+    Object.keys(cronometros).forEach(key => {
+        const item = cronometros[key];
+        item.timer.addEventListener('secondsUpdated', () => {
+            $(item.display).html(item.timer.getTimeValues().toString());
+        });
+    });
 
-function btnStart(idChrono) {
-    const pilotoActual = $("#pilotoActual").val();
-    if (!pilotoActual) { alert("Selecciona un piloto actual"); return; }
-
-    const item = cronometros[idChrono];
-    if (item.timer.isRunning()) return;
-
-    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
-    item.timer.start();
-
-    if(idChrono === "Meta" && !carreraIniciada){
-        timerCarrera.start();
-        carreraIniciada = true;
+    function actualizarContador() {
+        $("#labelContador").html(`Vuelta actual: ${contadorVueltas}`);
     }
-}
 
-function registrarVuelta(idChrono) {
-    const item = cronometros[idChrono];
-    const pilotoActual = $("#pilotoActual").val();
-    const pilotoSiguiente = $("#siguientePiloto").val();
+    function btnStart(idChrono) {
+        const pilotoActual = $("#pilotoActual").val();
+        if (!pilotoActual) { alert("Selecciona un piloto actual"); return; }
 
-    if (!item.timer.isRunning()) { alert("El cronómetro no está iniciado"); return; }
-    if (!pilotoActual) { alert("Selecciona piloto actual"); return; }
+        const item = cronometros[idChrono];
+        if (item.timer.isRunning()) return;
 
-    const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
-    const datos = {
-        piloto: pilotoActual,
-        numeroVuelta: contadorVueltas,
-        cronometro: idChrono,
-        fecha_inicio: item.inicio,
-        fecha_final: fechaFinal
-    };
+        item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+        item.timer.start();
 
-    $.post('/admin/evento/cronometros', datos)
-        .done(function() {
-            contadorVueltas++;
-            actualizarContador();
+        if (idChrono === "Meta" && !carreraIniciada) {
+            timerCarrera.start();
+            carreraIniciada = true;
+        }
+    }
 
-            // Lógica de intercambio: Siguiente pasa a ser Actual
-            // Solo Meta y PITS pueden hacer cambio automático de piloto
-            if ((idChrono === "Meta" || idChrono === "PITS") && pilotoSiguiente && pilotoSiguiente !== "") {
-                $("#pilotoActual").val(pilotoSiguiente);
-                $("#siguientePiloto").val("");
-}
+    function registrarVuelta(idChrono) {
+        const item = cronometros[idChrono];
+        const pilotoActual = $("#pilotoActual").val();
+        const pilotoSiguiente = $("#siguientePiloto").val();
 
-// Meta y PITS siguen corriendo automáticamente
-if (idChrono === "Meta" || idChrono === "PITS") {
-    item.timer.reset();
-    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
-    item.timer.start();
-}
+        if (!item.timer.isRunning()) { alert("El cronómetro no está iniciado"); return; }
+        if (!pilotoActual) { alert("Selecciona piloto actual"); return; }
 
-// Cambio se detiene y queda en cero
-if (idChrono === "Cambio") {
-    item.timer.stop();
+        const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
+        const datos = {
+            piloto: pilotoActual,
+            numeroVuelta: contadorVueltas,
+            cronometro: idChrono,
+            fecha_inicio: item.inicio,
+            fecha_final: fechaFinal,
+            eventoActivo: eventoActivo
+        };
 
-    // crear un nuevo timer limpio
-    item.timer = new easytimer.Timer();
+        $.post(urlCompleta, datos)
+            .done(function () {
+                contadorVueltas++;
+                actualizarContador();
 
-    item.timer.addEventListener('secondsUpdated', () => {
-        $(item.display).html(item.timer.getTimeValues().toString());
-    });
+                // Lógica de intercambio: Siguiente pasa a ser Actual
+                // Solo Meta y PITS pueden hacer cambio automático de piloto
+                if ((idChrono === "Meta" || idChrono === "PITS") && pilotoSiguiente && pilotoSiguiente !== "") {
+                    $("#pilotoActual").val(pilotoSiguiente);
+                    $("#siguientePiloto").val("");
+                }
 
-    item.inicio = null;
-    $(item.display).html("00:00:00");
-}
+                // Meta y PITS siguen corriendo automáticamente
+                if (idChrono === "Meta" || idChrono === "PITS") {
+                    item.timer.reset();
+                    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+                    item.timer.start();
+                }
 
-        })
-        .fail(() => alert("Error guardando vuelta"));
-}
+                // Cambio se detiene y queda en cero
+                if (idChrono === "Cambio") {
+                    item.timer.stop();
 
-function btnStop(idChrono) {
-    const item = cronometros[idChrono];
-    const pilotoActual = $("#pilotoActual").val();
+                    // crear un nuevo timer limpio
+                    item.timer = new easytimer.Timer();
 
-    if (!item.timer.isRunning()) return;
+                    item.timer.addEventListener('secondsUpdated', () => {
+                        $(item.display).html(item.timer.getTimeValues().toString());
+                    });
 
-    item.timer.stop();
+                    item.inicio = null;
+                    $(item.display).html("00:00:00");
+                }
 
-    const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
+            })
+            .fail(() => alert("Error guardando vuelta"));
+    }
 
-    const datos = {
-        piloto: pilotoActual,
-        numeroVuelta: contadorVueltas,
-        cronometro: idChrono,
-        fecha_inicio: item.inicio,
-        fecha_final: fechaFinal
-    };
+    function btnStop(idChrono) {
+        const item = cronometros[idChrono];
+        const pilotoActual = $("#pilotoActual").val();
+        alert(urlCompleta);
+        if (!item.timer.isRunning()) return;
 
-    $.post('/admin/evento/cronometros', datos)
-        .done(() => {
+        item.timer.stop();
 
-            // destruir timer actual y crear uno nuevo
-            item.timer = new easytimer.Timer();
+        const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
 
-            item.timer.addEventListener('secondsUpdated', () => {
-                $(item.display).html(item.timer.getTimeValues().toString());
+        const datos = {
+            piloto: pilotoActual,
+            numeroVuelta: contadorVueltas,
+            cronometro: idChrono,
+            fecha_inicio: item.inicio,
+            fecha_final: fechaFinal,
+            eventoActivo: eventoActivo
+        };
+
+        $.post(urlCompleta, datos)
+            .done(() => {
+
+                // destruir timer actual y crear uno nuevo
+                item.timer = new easytimer.Timer();
+
+                item.timer.addEventListener('secondsUpdated', () => {
+                    $(item.display).html(item.timer.getTimeValues().toString());
+                });
+
+                item.inicio = null;
+                $(item.display).html("00:00:00");
+            })
+            .fail(() => alert("Error guardando daños"));
+    }
+
+    function terminarEvento() {
+        if (confirm("¿Seguro que deseas finalizar el evento?")) {
+
+            // Guardar datos finales
+            const tiempoTotalCarrera = timerCarrera.getTimeValues().toString();
+            const totalVueltas = contadorVueltas - 1;
+
+            console.log("Tiempo total:", tiempoTotalCarrera);
+            console.log("Total vueltas:", totalVueltas);
+
+            // Detener y resetear cronómetros individuales
+            Object.keys(cronometros).forEach(key => {
+                const item = cronometros[key];
+
+                if (item.timer.isRunning()) {
+                    item.timer.stop();
+                }
+
+                item.timer.reset();
+                item.timer.stop();
+
+                item.inicio = null;
+
+                $(item.display).html("00:00:00");
             });
 
-            item.inicio = null;
-            $(item.display).html("00:00:00");
-        })
-        .fail(() => alert("Error guardando daños"));
-}
-
-function terminarEvento() {
-    if(confirm("¿Seguro que deseas finalizar el evento?")) {
-
-        // Guardar datos finales
-        const tiempoTotalCarrera = timerCarrera.getTimeValues().toString();
-        const totalVueltas = contadorVueltas - 1;
-
-        console.log("Tiempo total:", tiempoTotalCarrera);
-        console.log("Total vueltas:", totalVueltas);
-
-        // Detener y resetear cronómetros individuales
-        Object.keys(cronometros).forEach(key => {
-            const item = cronometros[key];
-
-            if(item.timer.isRunning()){
-                item.timer.stop();
+            // SOLO detener cronómetro principal (sin resetearlo)
+            if (timerCarrera.isRunning()) {
+                timerCarrera.stop();
             }
 
-            item.timer.reset();
-            item.timer.stop();
+            // Mantener visible el tiempo final
+            $("#tiempoCarrera").html("⏱ Carrera: " + tiempoTotalCarrera);
 
-            item.inicio = null;
+            // Mantener visible la cantidad final de vueltas
+            $("#labelContador").html("Total vueltas: " + totalVueltas);
 
-            $(item.display).html("00:00:00");
-        });
+            // Limpiar pilotos
+            $("#pilotoActual").val("");
+            $("#siguientePiloto").val("");
 
-        // SOLO detener cronómetro principal (sin resetearlo)
-        if(timerCarrera.isRunning()){
-            timerCarrera.stop();
+            carreraIniciada = false;
+
+            alert(
+                "Evento finalizado\n\n" +
+                "Tiempo total: " + tiempoTotalCarrera +
+                "\nTotal vueltas: " + totalVueltas
+            );
         }
-
-        // Mantener visible el tiempo final
-        $("#tiempoCarrera").html("⏱ Carrera: " + tiempoTotalCarrera);
-
-        // Mantener visible la cantidad final de vueltas
-        $("#labelContador").html("Total vueltas: " + totalVueltas);
-
-        // Limpiar pilotos
-        $("#pilotoActual").val("");
-        $("#siguientePiloto").val("");
-
-        carreraIniciada = false;
-
-        alert(
-            "Evento finalizado\n\n" +
-            "Tiempo total: " + tiempoTotalCarrera +
-            "\nTotal vueltas: " + totalVueltas
-        );
     }
-}
 </script>
 {% endblock %}

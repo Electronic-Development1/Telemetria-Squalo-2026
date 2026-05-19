@@ -59,7 +59,8 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkTo(EventoCrudController::class, 'Competencias', 'fa fa-tags');
-
         yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
+        yield MenuItem::linkTo(TimerPilotoCrudController::class, 'Tiempos de Pilotos', 'fa fa-tags');
+        
     }
 }

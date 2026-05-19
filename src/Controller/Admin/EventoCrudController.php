@@ -4,6 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Evento;
 use App\Entity\Piloto;
+use App\Entity\TimerPiloto;
+use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -17,6 +19,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -72,6 +75,34 @@ class EventoCrudController extends AbstractCrudController
             'pilotos' => $pilotos,
             'eventoActivo' => $eventoActivo
         ]);
+    }
+
+    #[Route(path: '/cronometros/api/timer', name: 'cronometros_api_timer',  methods: ['POST'])]
+    public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $em = $doctrine->getManager();
+        $pilotoRepository = $em->getRepository(Piloto::class);
+        $eventoRepository = $em->getRepository(Evento::class);
+
+        $idPiloto = $request->request->get('piloto');
+        $numeroVuelta = $request->request->get('numeroVuelta');
+        $cronometro = $request->request->get('cronometro');
+        $fecha_inicio = $request->request->get('fecha_inicio');
+        $fecha_final = $request->request->get('fecha_final');
+        $eventoActivo = $request->request->get('eventoActivo');
+        $piloto = $pilotoRepository->find($idPiloto);
+        $evento = $eventoRepository->find($eventoActivo);
+
+        $timer = new TimerPiloto();
+        $timer->setPiloto($piloto);
+        $timer->setEvento($evento);
+        $timer->setCronometro($cronometro);
+        $timer->setFechaFinal(new DateTime($fecha_final));
+        $timer->setFechaInicio(new DateTime($fecha_inicio));
+        $timer->setNumeroVueltas($numeroVuelta);
+        $em->persist($timer);
+        $em->flush();
+        return $this->json(['status' => true]);
     }
 
     #[AdminRoute(path: '/verInformes', name: 'verInformes')]
