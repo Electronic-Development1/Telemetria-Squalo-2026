@@ -77,33 +77,80 @@ class EventoCrudController extends AbstractCrudController
         ]);
     }
 
-    #[Route(path: '/cronometros/api/timer', name: 'cronometros_api_timer',  methods: ['POST'])]
-    public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request): Response
-    {
-        $em = $doctrine->getManager();
-        $pilotoRepository = $em->getRepository(Piloto::class);
-        $eventoRepository = $em->getRepository(Evento::class);
+    #[Route(path: '/cronometros/api/timer', name: 'cronometros_api_timer', methods: ['POST'])]
+public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request): Response
+{
+    $em = $doctrine->getManager();
 
-        $idPiloto = $request->request->get('piloto');
-        $numeroVuelta = $request->request->get('numeroVuelta');
-        $cronometro = $request->request->get('cronometro');
-        $fecha_inicio = $request->request->get('fecha_inicio');
-        $fecha_final = $request->request->get('fecha_final');
-        $eventoActivo = $request->request->get('eventoActivo');
-        $piloto = $pilotoRepository->find($idPiloto);
-        $evento = $eventoRepository->find($eventoActivo);
+    $cronometro   = $request->request->get('cronometro');
+    $pilotoId     = $request->request->get('piloto');
+    $pilotoEntraId = $request->request->get('piloto_entra');
+    $numeroVuelta = (int) $request->request->get('numeroVuelta', 1);
+    $fechaInicio  = $request->request->get('fecha_inicio');
+    $fechaFinal   = $request->request->get('fecha_final');
+    $eventoActivo = $request->request->get('eventoActivo');
 
-        $timer = new TimerPiloto();
-        $timer->setPiloto($piloto);
-        $timer->setEvento($evento);
-        $timer->setCronometro($cronometro);
-        $timer->setFechaFinal(new DateTime($fecha_final));
-        $timer->setFechaInicio(new DateTime($fecha_inicio));
-        $timer->setNumeroVueltas($numeroVuelta);
-        $em->persist($timer);
-        $em->flush();
-        return $this->json(['status' => true]);
+    $piloto      = $pilotoId     ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoId)     : null;
+    $pilotoEntra = $pilotoEntraId ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoEntraId) : null;
+    $evento      = $eventoActivo ? $em->getRepository(\App\Entity\Evento::class)->find($eventoActivo)  : null;
+
+    $dtInicio = new \DateTime($fechaInicio);
+    $dtFinal  = new \DateTime($fechaFinal);
+
+    $seg = abs($dtFinal->getTimestamp() - $dtInicio->getTimestamp());
+    $tiempoStr = floor($seg / 60) . ':' . str_pad($seg % 60, 2, '0', STR_PAD_LEFT) . ' sg';
+
+    switch ($cronometro) {
+
+        case 'Meta':
+            $record = new \App\Entity\TimerMeta();
+            $record->setPiloto($piloto);
+            $record->setNumeroVuelta($numeroVuelta);
+            $record->setFechaInicio($dtInicio);
+            $record->setFechaFinal($dtFinal);
+            $record->setTiempo($tiempoStr);
+            $record->setEvento($evento);
+            break;
+
+        case 'PITS':
+            $record = new \App\Entity\TimerPits();
+            $record->setPiloto($piloto);
+            $record->setNumeroVuelta($numeroVuelta);
+            $record->setFechaInicio($dtInicio);
+            $record->setFechaFinal($dtFinal);
+            $record->setTiempo($tiempoStr);
+            $record->setEvento($evento);
+            break;
+
+        case 'Cambio':
+            $record = new \App\Entity\TimerCambio();
+            $record->setPilotoSale($piloto);
+            $record->setPilotoEntra($pilotoEntra);
+            $record->setFechaInicio($dtInicio);
+            $record->setFechaFinal($dtFinal);
+            $record->setTiempo($tiempoStr);
+            $record->setEvento($evento);
+            break;
+
+        case 'Danos':
+            $record = new \App\Entity\TimerDanos();
+            $record->setPiloto($piloto);
+            $record->setNumeroVuelta($numeroVuelta);
+            $record->setFechaInicio($dtInicio);
+            $record->setFechaFinal($dtFinal);
+            $record->setTiempo($tiempoStr);
+            $record->setEvento($evento);
+            break;
+
+        default:
+            return $this->json(['status' => false, 'error' => 'Cronómetro desconocido'], 400);
     }
+
+    $em->persist($record);
+    $em->flush();
+
+    return $this->json(['status' => true]);
+}
 
     #[AdminRoute(path: '/verInformes', name: 'verInformes')]
     public function verInformes(AdminContext $context, ManagerRegistry $doctrine): Response

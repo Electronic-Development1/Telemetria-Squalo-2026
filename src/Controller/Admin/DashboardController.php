@@ -2,6 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\TimerMetaCrudController;
+use App\Controller\Admin\TimerPitsCrudController;
+use App\Controller\Admin\TimerCambioCrudController;
+use App\Controller\Admin\TimerDanosCrudController;
+use App\Entity\Evento;
 use App\Entity\Piloto;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -11,56 +16,60 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 
-
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
     private $doctrine;
+
     public function __construct(ManagerRegistry $registry)
     {
         $this->doctrine = $registry;
     }
 
-
-    #[Route('/time', name: 'addCronometros', methods: ['get'])]
+    /**
+     * Pantalla de cronómetros.
+     * Pasa la lista de pilotos y el evento activo (el más reciente) a la vista.
+     */
+    #[Route('/time', name: 'addCronometros', methods: ['GET'])]
     public function addCronometros(): Response
     {
         $em = $this->doctrine->getManager();
-        return $this->render('admin/cronometro.html.twig', []);
-    }
 
+        $pilotos = $em->getRepository(Piloto::class)->findAll();
+
+        // Toma el evento más reciente como "activo"
+        $evento = $em->getRepository(Evento::class)
+            ->findOneBy([], ['id' => 'DESC']);
+
+        $eventoActivo = $evento ? $evento->getId() : '';
+
+        return $this->render('admin/cronometro.html.twig', [
+            'pilotos'      => $pilotos,
+            'eventoActivo' => $eventoActivo,
+        ]);
+    }
 
     public function index(): Response
     {
-
-        // Option 1. You can make your dashboard redirect to some common page of your backend
-        //
-        // return $this->redirectToRoute('admin_user_index');
-
-        // Option 2. You can make your dashboard redirect to different pages depending on the user
-        //
-        // if ('jane' === $this->getUser()->getUsername()) {
-        //     return $this->redirectToRoute('...');
-        // }
-
-        // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
-        // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
-        //
         return $this->render('admin/dashboard.html.twig');
     }
 
     public function configureDashboard(): Dashboard
     {
-        return Dashboard::new()
-            ->setTitle('Squalo');
+        return Dashboard::new()->setTitle('Squalo');
     }
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkTo(EventoCrudController::class, 'Competencias', 'fa fa-tags');
-        yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
-        yield MenuItem::linkTo(TimerPilotoCrudController::class, 'Tiempos de Pilotos', 'fa fa-tags');
-        
-    }
+    yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
+    yield MenuItem::linkTo(EventoCrudController::class, 'Competencias', 'fa fa-tags');
+    yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
+    yield MenuItem::subMenu('Tiempos de Pilotos', 'fa fa-clock-o')->setSubItems([
+        MenuItem::linkTo(TimerMetaCrudController::class, 'META', 'fa fa-flag'),
+        MenuItem::linkTo(TimerPitsCrudController::class, 'PITS', 'fa fa-wrench'),
+        MenuItem::linkTo(TimerCambioCrudController::class, 'Cambio de Piloto', 'fa fa-user'),
+        MenuItem::linkTo(TimerDanosCrudController::class, 'Daños', 'fa fa-warning'),
+    ]);
 }
+    }
+
