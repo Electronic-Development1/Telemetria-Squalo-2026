@@ -1,0 +1,758 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block head_javascript %}
+{{ parent() }}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/easytimer.js@4.4.0/dist/easytimer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+
+<style>
+    
+    
+    body {
+        background: #0b0b0b;
+    }
+
+    .top-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .pilot-select {
+        width: 100%;
+    }
+
+    .contador-box {
+        background: #1e1e1e;
+        padding: 12px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: white;
+        font-weight: bold;
+    }
+
+    .chrono-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    @media(max-width: 768px) {
+        .chrono-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chrono-card {
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .chrono-label {
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        color: white;
+    }
+
+    .chrono-display {
+        font-family: 'Courier New', monospace;
+        font-size: 42px;
+        font-weight: bold;
+        text-align: center;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .chrono-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-chrono {
+        flex: 1;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-start:hover {
+        transform: scale(1.03);
+    }
+
+    .btn-stop {
+        opacity: 0.9;
+    }
+
+    /* META */
+    .c-meta {
+        background: #0F6E56;
+    }
+
+    .c-meta .chrono-display {
+        background: #0b5643;
+        color: white;
+    }
+
+    .c-meta .btn-start {
+        background: #1fc98a;
+        color: white;
+    }
+
+    .c-meta .btn-stop {
+        background: #094336;
+        color: white;
+    }
+
+    /* PITS */
+    .c-pits {
+        background: #8b5700;
+    }
+
+    .c-pits .chrono-display {
+        background: #6a4100;
+        color: white;
+    }
+
+    .c-pits .btn-start {
+        background: #f0a500;
+        color: black;
+    }
+
+    .c-pits .btn-stop {
+        background: #5a3500;
+        color: white;
+    }
+
+    /* CAMBIO */
+    .c-cambio {
+        background: #165ca8;
+    }
+
+    .c-cambio .chrono-display {
+        background: #0e4785;
+        color: white;
+    }
+
+    .c-cambio .btn-start {
+        background: #3d95ff;
+        color: white;
+    }
+
+    .c-cambio .btn-stop {
+        background: #08376b;
+        color: white;
+    }
+
+    /* DAÑOS */
+    .c-danos {
+        background: #a82222;
+    }
+
+    .c-danos .chrono-display {
+        background: #7e1515;
+        color: white;
+    }
+
+    .c-danos .btn-start {
+        background: #ff4f4f;
+        color: white;
+    }
+
+    .c-danos .btn-stop {
+        background: #5e0d0d;
+        color: white;
+    }
+
+    .c-meta .form-select {
+    background: #0b5643;
+    color: white;
+    border: 1px solid #1fc98a;
+}
+
+    .c-pits .form-select {
+    background: #6a4100;
+    color: white;
+    border: 1px solid #f0a500;
+}
+
+    .c-cambio .form-select {
+    background: #0e4785;
+    color: white;
+    border: 1px solid #3d95ff;
+}
+
+    .c-danos .form-select {
+    background: #7e1515;
+    color: white;
+    border: 1px solid #ff4f4f;
+}
+
+    /* Placeholder y flecha */
+    .form-select:focus {
+    box-shadow: none;
+    color: white;
+}
+
+.form-select option {
+    background: #1e1e1e;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+
+<div class="top-section">
+
+    <div style="width:100%; text-align:center; margin-bottom:25px;">
+
+    <div style="
+        color:white;
+        font-size:18px;
+        font-weight:600;
+        margin-bottom:10px;
+        letter-spacing:1px;
+    ">
+        CARRERA
+    </div>
+
+    <div id="tiempoCarrera" style="
+        font-family:'Courier New', monospace;
+        font-size:50px;
+        font-weight:300;
+        color:white;
+        letter-spacing:4px;
+    ">
+        00:00:00
+    </div>
+
+</div>
+
+    <div class="contador-box">
+        <span id="labelContador">Vuelta actual: 1</span>
+    </div>
+
+    <div class="contador-box">
+        <button onclick="terminarEvento()"
+            style="background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">
+            Finalizar evento
+        </button>
+    </div>
+
+</div>
+
+<div class="chrono-grid">
+
+    <!-- META -->
+    <div class="chrono-card c-meta">
+
+        <div class="chrono-label">🏁 META → META</div>
+
+        <div class="pilot-select" style="margin-bottom:15px;">
+            <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+                Piloto actual
+            </label>
+
+            <select class="form-select" id="pilotoMeta">
+                <option value="">Seleccionar piloto</option>
+
+                {% for p in pilotos %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="chrono-display" id="chronoMeta">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Meta')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Meta')">
+                ■ Registrar vuelta
+            </button>
+        </div>
+
+    </div>
+
+    <!-- PITS -->
+    <div class="chrono-card c-pits">
+
+        <div class="chrono-label">🔧 PITS → PITS</div>
+
+        <div class="pilot-select" style="margin-bottom:15px;">
+            <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+                Piloto actual
+            </label>
+
+            <select class="form-select" id="pilotoPits">
+                <option value="">Seleccionar piloto</option>
+
+                {% for p in pilotos %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="chrono-display" id="chronoPits">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('PITS')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('PITS')">
+                ■ Registrar vuelta
+            </button>
+        </div>
+
+    </div>
+
+    <!-- CAMBIO -->
+    <div class="chrono-card c-cambio">
+
+        <div class="chrono-label">👤 CAMBIO DE PILOTO</div>
+
+        <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+
+            <div class="pilot-select" style="flex:1;">
+                <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+                    Piloto entra
+                </label>
+
+                <select class="form-select" id="pilotoEntra">
+                    <option value="">Seleccionar piloto</option>
+
+                    {% for p in pilotos %}
+                    <option value="{{ p.id }}">{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="pilot-select" style="flex:1;">
+                <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+                    Piloto sale
+                </label>
+
+                <select class="form-select" id="pilotoSale">
+                    <option value="">Seleccionar piloto</option>
+
+                    {% for p in pilotos %}
+                    <option value="{{ p.id }}">{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <div class="chrono-display" id="chronoCambio">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Cambio')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="registrarVuelta('Cambio')">
+                ■ Registrar cambio
+            </button>
+        </div>
+
+    </div>
+
+    <!-- DAÑOS -->
+    <div class="chrono-card c-danos">
+
+        <div class="chrono-label">⚠ DAÑOS</div>
+
+        <div class="pilot-select" style="margin-bottom:15px;">
+            <label style="color:white; font-weight:bold; margin-bottom:5px; display:block;">
+                Piloto actual
+            </label>
+
+            <select class="form-select" id="pilotoDanos">
+                <option value="">Seleccionar piloto</option>
+
+                {% for p in pilotos %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="chrono-display" id="chronoDanos">00:00:00</div>
+
+        <div class="chrono-buttons">
+            <button class="btn-chrono btn-start" onclick="btnStart('Danos')">
+                ▶ Iniciar
+            </button>
+
+            <button class="btn-chrono btn-stop" onclick="btnStop('Danos')">
+                ■ Terminar
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block body_javascript %}
+
+<script>
+
+    let contadorVueltas = 1;
+    let timerCarrera = new easytimer.Timer();
+    let carreraIniciada = false;
+
+    const urlCompleta = '/cronometros/api/timer';
+
+    const eventoActivo = '{{eventoActivo}}';
+
+    const cronometros = {
+
+        Meta: {
+            timer: new easytimer.Timer(),
+            display: '#chronoMeta',
+            inicio: null
+        },
+
+        PITS: {
+            timer: new easytimer.Timer(),
+            display: '#chronoPits',
+            inicio: null
+        },
+
+        Cambio: {
+            timer: new easytimer.Timer(),
+            display: '#chronoCambio',
+            inicio: null
+        },
+
+        Danos: {
+            timer: new easytimer.Timer(),
+            display: '#chronoDanos',
+            inicio: null
+        }
+    };
+
+    // TIMER CARRERA
+    timerCarrera.addEventListener('secondsUpdated', () => {
+
+        $("#tiempoCarrera").html(
+            timerCarrera.getTimeValues().toString()
+        );
+    });
+
+    // TIMERS INDIVIDUALES
+    Object.keys(cronometros).forEach(key => {
+
+        const item = cronometros[key];
+
+        item.timer.addEventListener('secondsUpdated', () => {
+
+            $(item.display).html(
+                item.timer.getTimeValues().toString()
+            );
+        });
+    });
+
+    function actualizarContador() {
+
+        $("#labelContador").html(
+            `Vuelta actual: ${contadorVueltas}`
+        );
+    }
+
+    function obtenerPiloto(idChrono) {
+
+        if (idChrono === "Meta") {
+            return $("#pilotoMeta").val();
+        }
+
+        if (idChrono === "PITS") {
+            return $("#pilotoPits").val();
+        }
+
+        if (idChrono === "Cambio") {
+            return $("#pilotoSale").val();
+        }
+
+        if (idChrono === "Danos") {
+            return $("#pilotoDanos").val();
+        }
+
+        return "";
+    }
+
+    function btnStart(idChrono) {
+
+        const pilotoActual = obtenerPiloto(idChrono);
+
+        if (!pilotoActual) {
+
+            alert("Selecciona un piloto");
+            return;
+        }
+
+        const item = cronometros[idChrono];
+
+        if (item.timer.isRunning()) {
+            return;
+        }
+
+        item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+
+        item.timer.start();
+
+        if (idChrono === "Meta" && !carreraIniciada) {
+
+            timerCarrera.start();
+
+            carreraIniciada = true;
+        }
+    }
+
+    function registrarVuelta(idChrono) {
+
+        const item = cronometros[idChrono];
+
+        let pilotoActual = "";
+        let pilotoSiguiente = "";
+
+        if (idChrono === "Meta") {
+            pilotoActual = $("#pilotoMeta").val();
+        }
+
+        if (idChrono === "PITS") {
+            pilotoActual = $("#pilotoPits").val();
+        }
+
+        if (idChrono === "Cambio") {
+
+            pilotoActual = $("#pilotoSale").val();
+            pilotoSiguiente = $("#pilotoEntra").val();
+        }
+
+        if (!item.timer.isRunning()) {
+
+            alert("El cronómetro no está iniciado");
+            return;
+        }
+
+        if (!pilotoActual) {
+
+            alert("Selecciona piloto");
+            return;
+        }
+
+        const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
+
+        const datos = {
+
+            piloto: pilotoActual,
+            piloto_entra: pilotoSiguiente,
+
+            numeroVuelta: contadorVueltas,
+
+            cronometro: idChrono,
+
+            fecha_inicio: item.inicio,
+
+            fecha_final: fechaFinal,
+
+            eventoActivo: eventoActivo
+        };
+
+        $.post(urlCompleta, datos)
+
+            .done(function () {
+
+                // SOLO META Y PITS SUMAN VUELTAS
+                if (idChrono === "Meta" || idChrono === "PITS") {
+
+                    contadorVueltas++;
+
+                    actualizarContador();
+                }
+
+                // META Y PITS CONTINÚAN
+                if (idChrono === "Meta" || idChrono === "PITS") {
+
+                    item.timer.reset();
+
+                    item.inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+
+                    item.timer.start();
+                }
+
+                // CAMBIO SE RESETEA
+                if (idChrono === "Cambio") {
+
+                    item.timer.stop();
+
+                    item.timer = new easytimer.Timer();
+
+                    item.timer.addEventListener('secondsUpdated', () => {
+
+                        $(item.display).html(
+                            item.timer.getTimeValues().toString()
+                        );
+                    });
+
+                    item.inicio = null;
+
+                    $(item.display).html("00:00:00");
+
+                    $("#pilotoSale").val("");
+                    $("#pilotoEntra").val("");
+                }
+
+            })
+
+            .fail(() => {
+
+                alert("Error guardando vuelta");
+            });
+    }
+
+    function btnStop(idChrono) {
+
+        const item = cronometros[idChrono];
+
+        let pilotoActual = "";
+
+        if (idChrono === "Danos") {
+
+            pilotoActual = $("#pilotoDanos").val();
+        }
+
+        if (!item.timer.isRunning()) {
+            return;
+        }
+
+        item.timer.stop();
+
+        const fechaFinal = moment().format('YYYY-MM-DD HH:mm:ss');
+
+        const datos = {
+
+            piloto: pilotoActual,
+
+            numeroVuelta: contadorVueltas,
+
+            cronometro: idChrono,
+
+            fecha_inicio: item.inicio,
+
+            fecha_final: fechaFinal,
+
+            eventoActivo: eventoActivo
+        };
+
+        $.post(urlCompleta, datos)
+
+            .done(() => {
+
+                item.timer = new easytimer.Timer();
+
+                item.timer.addEventListener('secondsUpdated', () => {
+
+                    $(item.display).html(
+                        item.timer.getTimeValues().toString()
+                    );
+                });
+
+                item.inicio = null;
+
+                $(item.display).html("00:00:00");
+
+                $("#pilotoDanos").val("");
+            })
+
+            .fail(() => {
+
+                alert("Error guardando daños");
+            });
+    }
+
+    function terminarEvento() {
+
+        if (confirm("¿Seguro que deseas finalizar el evento?")) {
+
+            const tiempoTotalCarrera =
+                timerCarrera.getTimeValues().toString();
+
+            const totalVueltas =
+                contadorVueltas - 1;
+
+            Object.keys(cronometros).forEach(key => {
+
+                const item = cronometros[key];
+
+                if (item.timer.isRunning()) {
+
+                    item.timer.stop();
+                }
+
+                item.timer.reset();
+
+                item.timer.stop();
+
+                item.inicio = null;
+
+                $(item.display).html("00:00:00");
+            });
+
+            if (timerCarrera.isRunning()) {
+
+                timerCarrera.stop();
+            }
+
+            $("#tiempoCarrera").html(
+                tiempoTotalCarrera
+            );
+
+            $("#labelContador").html(
+                "Total vueltas: " + totalVueltas
+            );
+
+            // LIMPIAR SELECTS
+            $("#pilotoMeta").val("");
+
+            $("#pilotoPits").val("");
+
+            $("#pilotoSale").val("");
+
+            $("#pilotoEntra").val("");
+
+            $("#pilotoDanos").val("");
+
+            carreraIniciada = false;
+
+            alert(
+                "Evento finalizado\n\n" +
+                "Tiempo total: " + tiempoTotalCarrera +
+                "\nTotal vueltas: " + totalVueltas
+            );
+        }
+    }
+
+</script>
+
+{% endblock %}
