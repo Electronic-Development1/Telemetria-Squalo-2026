@@ -15,6 +15,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
@@ -25,7 +27,7 @@ class DashboardController extends AbstractDashboardController
     {
         $this->doctrine = $registry;
     }
-
+   
     /**
      * Pantalla de cronómetros.
      * Pasa la lista de pilotos y el evento activo (el más reciente) a la vista.
@@ -61,15 +63,16 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-    yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-    yield MenuItem::linkTo(EventoCrudController::class, 'Competencias', 'fa fa-tags');
-    yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
-    yield MenuItem::subMenu('Tiempos de Pilotos', 'fa fa-clock-o')->setSubItems([
-        MenuItem::linkTo(TimerMetaCrudController::class, 'META', 'fa fa-flag'),
-        MenuItem::linkTo(TimerPitsCrudController::class, 'PITS', 'fa fa-wrench'),
-        MenuItem::linkTo(TimerCambioCrudController::class, 'Cambio de Piloto', 'fa fa-user'),
-        MenuItem::linkTo(TimerDanosCrudController::class, 'Daños', 'fa fa-warning'),
-    ]);
-}
-    }
+        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
+        yield MenuItem::linkTo(EventoCrudController::class, 'Competencias', 'fa fa-tags');
+        yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
+        yield MenuItem::linkTo(TimerPilotoCrudController::class, 'Tiempos de Piloto', 'fa fa-tags');
 
+        yield MenuItem::subMenu('-------', 'fa fa-clock-o')->setSubItems([
+            MenuItem::linkTo(TimerMetaCrudController::class, 'META', 'fa fa-flag'),
+            MenuItem::linkTo(TimerPitsCrudController::class, 'PITS', 'fa fa-wrench'),
+            MenuItem::linkTo(TimerCambioCrudController::class, 'Cambio de Piloto', 'fa fa-user'),
+            MenuItem::linkTo(TimerDanosCrudController::class, 'Daños', 'fa fa-warning'),
+        ]);
+    }
+}

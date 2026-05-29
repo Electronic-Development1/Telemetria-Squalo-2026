@@ -50,6 +50,9 @@ class EventoCrudController extends AbstractCrudController
         $addCronometros = Action::new('addCronometros', 'Add Cronometros', 'fa fa-clock-o')
             ->linkToCrudAction('addCronometros');
 
+        $addCronometrosEntrenamiento = Action::new('addCronometrosEntrenamiento', 'Add Entrenamiento(Cronometro)', 'fa fa-clock-o')
+            ->linkToCrudAction('addCronometrosEntrenamiento');
+
         $verInformes = Action::new('verInformes', 'Ver Informes', 'fa fa-bar-chart')
             ->linkToCrudAction('verInformes');
 
@@ -57,7 +60,25 @@ class EventoCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             //->add(Crud::PAGE_INDEX, $verFactura)
             ->add(Crud::PAGE_INDEX, $addCronometros)
+            ->add(Crud::PAGE_INDEX, $addCronometrosEntrenamiento)
             ->add(Crud::PAGE_INDEX, $verInformes);
+    }
+
+
+    #[AdminRoute(path: '/entrenamiento/cronometros', name: 'addCronometros_entrenamiento')]
+    public function addCronometrosEntrenamiento(AdminContext $context, ManagerRegistry $doctrine): Response
+    {
+        $em = $doctrine->getManager();
+        $eventoActivo = $context->getEntity()->getInstance();
+
+
+        $pilotosRepository = $em->getRepository(Piloto::class);
+        $pilotos = $pilotosRepository->findAll();
+
+        return $this->render('admin/cronometro_entrenamientos.html.twig', [
+            'pilotos' => $pilotos,
+            'eventoActivo' => $eventoActivo
+        ]);
     }
 
 
@@ -78,79 +99,40 @@ class EventoCrudController extends AbstractCrudController
     }
 
     #[Route(path: '/cronometros/api/timer', name: 'cronometros_api_timer', methods: ['POST'])]
-public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request): Response
-{
-    $em = $doctrine->getManager();
+    public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $em = $doctrine->getManager();
 
-    $cronometro   = $request->request->get('cronometro');
-    $pilotoId     = $request->request->get('piloto');
-    $pilotoEntraId = $request->request->get('piloto_entra');
-    $numeroVuelta = (int) $request->request->get('numeroVuelta', 1);
-    $fechaInicio  = $request->request->get('fecha_inicio');
-    $fechaFinal   = $request->request->get('fecha_final');
-    $eventoActivo = $request->request->get('eventoActivo');
+        $cronometro   = $request->request->get('cronometro');
+        $pilotoId     = $request->request->get('piloto');
+        $pilotoEntraId = $request->request->get('piloto_entra');
+        $numeroVuelta = (int) $request->request->get('numeroVuelta', 1);
+        $fechaInicio  = $request->request->get('fecha_inicio');
+        $fechaFinal   = $request->request->get('fecha_final');
+        $eventoActivo = $request->request->get('eventoActivo');
 
-    $piloto      = $pilotoId     ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoId)     : null;
-    $pilotoEntra = $pilotoEntraId ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoEntraId) : null;
-    $evento      = $eventoActivo ? $em->getRepository(\App\Entity\Evento::class)->find($eventoActivo)  : null;
+        $piloto      = $pilotoId     ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoId)     : null;
+        $pilotoEntra = $pilotoEntraId ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoEntraId) : null;
+        $evento      = $eventoActivo ? $em->getRepository(\App\Entity\Evento::class)->find($eventoActivo)  : null;
 
-    $dtInicio = new \DateTime($fechaInicio);
-    $dtFinal  = new \DateTime($fechaFinal);
+        $dtInicio = new \DateTime($fechaInicio);
+        $dtFinal  = new \DateTime($fechaFinal);
 
-    $seg = abs($dtFinal->getTimestamp() - $dtInicio->getTimestamp());
-    $tiempoStr = floor($seg / 60) . ':' . str_pad($seg % 60, 2, '0', STR_PAD_LEFT) . ' sg';
+        $seg = abs($dtFinal->getTimestamp() - $dtInicio->getTimestamp());
+        $tiempoStr = floor($seg / 60) . ':' . str_pad($seg % 60, 2, '0', STR_PAD_LEFT) . ' sg';
+        $record = new TimerPiloto();
+        $record->setPiloto($piloto);
+        $record->setPilotoEntra($pilotoEntra);
+        $record->setNumeroVueltas($numeroVuelta);
+        $record->setFechaInicio($dtInicio);
+        $record->setFechaFinal($dtFinal);
+        $record->setCronometro($cronometro);
+        $record->setEvento($evento);
+        $em->persist($record);
+        $em->flush();
 
-    switch ($cronometro) {
-
-        case 'Meta':
-            $record = new \App\Entity\TimerMeta();
-            $record->setPiloto($piloto);
-            $record->setNumeroVuelta($numeroVuelta);
-            $record->setFechaInicio($dtInicio);
-            $record->setFechaFinal($dtFinal);
-            $record->setTiempo($tiempoStr);
-            $record->setEvento($evento);
-            break;
-
-        case 'PITS':
-            $record = new \App\Entity\TimerPits();
-            $record->setPiloto($piloto);
-            $record->setNumeroVuelta($numeroVuelta);
-            $record->setFechaInicio($dtInicio);
-            $record->setFechaFinal($dtFinal);
-            $record->setTiempo($tiempoStr);
-            $record->setEvento($evento);
-            break;
-
-        case 'Cambio':
-            $record = new \App\Entity\TimerCambio();
-            $record->setPilotoSale($piloto);
-            $record->setPilotoEntra($pilotoEntra);
-            $record->setFechaInicio($dtInicio);
-            $record->setFechaFinal($dtFinal);
-            $record->setTiempo($tiempoStr);
-            $record->setEvento($evento);
-            break;
-
-        case 'Danos':
-            $record = new \App\Entity\TimerDanos();
-            $record->setPiloto($piloto);
-            $record->setNumeroVuelta($numeroVuelta);
-            $record->setFechaInicio($dtInicio);
-            $record->setFechaFinal($dtFinal);
-            $record->setTiempo($tiempoStr);
-            $record->setEvento($evento);
-            break;
-
-        default:
-            return $this->json(['status' => false, 'error' => 'Cronómetro desconocido'], 400);
+        return $this->json(['status' => true]);
     }
-
-    $em->persist($record);
-    $em->flush();
-
-    return $this->json(['status' => true]);
-}
 
     #[AdminRoute(path: '/verInformes', name: 'verInformes')]
     public function verInformes(AdminContext $context, ManagerRegistry $doctrine): Response
@@ -160,7 +142,7 @@ public function cronometrosApiTimer(ManagerRegistry $doctrine, Request $request)
         $pilotosRepository = $em->getRepository(Piloto::class);
 
         $pilotos = $pilotosRepository->findAll();
-        return $this->render('admin/informe .html.twig', [
+        return $this->render('admin/informe.html.twig', [
             'pilotos' => $pilotos
         ]);
     }

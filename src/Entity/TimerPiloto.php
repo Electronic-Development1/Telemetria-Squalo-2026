@@ -31,6 +31,9 @@ class TimerPiloto
     #[ORM\ManyToOne]
     private ?Evento $evento = null;
 
+    #[ORM\ManyToOne]
+    private ?Piloto $piloto_entra = null;
+
     public function diff()
     {
         $intervalo = $this->fecha_final->diff($this->fecha_inicio);
@@ -114,6 +117,18 @@ class TimerPiloto
     public function setEvento(?Evento $evento): static
     {
         $this->evento = $evento;
+
+        return $this;
+    }
+
+    public function getPilotoEntra(): ?Piloto
+    {
+        return $this->piloto_entra;
+    }
+
+    public function setPilotoEntra(?Piloto $piloto_entra): static
+    {
+        $this->piloto_entra = $piloto_entra;
 
         return $this;
     }
