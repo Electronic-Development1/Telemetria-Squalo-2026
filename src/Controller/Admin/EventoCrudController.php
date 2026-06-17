@@ -22,6 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class EventoCrudController extends AbstractCrudController
 {
@@ -139,11 +140,67 @@ class EventoCrudController extends AbstractCrudController
     {
         $em = $doctrine->getManager();
 
-        $pilotosRepository = $em->getRepository(Piloto::class);
+        // Pasar todos los eventos para el selector del informe
+        $eventos = $em->getRepository(Evento::class)->findBy([], ['id' => 'DESC']);
 
-        $pilotos = $pilotosRepository->findAll();
+        // Evento activo = el que se seleccionó en la lista
+        $eventoActivo = $context->getEntity()->getInstance();
+        $eventoActivoId = $eventoActivo ? $eventoActivo->getId() : null;
+
         return $this->render('admin/informe.html.twig', [
-            'pilotos' => $pilotos
+            'eventos'      => $eventos,
+            'eventoActivo' => $eventoActivoId,
         ]);
+    }
+
+    #[Route(path: '/cronometros/api/informe-data', name: 'cronometros_api_informe_data', methods: ['GET'])]
+public function informeData(ManagerRegistry $doctrine, Request $request): JsonResponse
+{
+    $em = $doctrine->getManager();
+    $eventoId = $request->query->get('evento');
+
+    if (!$eventoId) {
+        return new JsonResponse(['error' => 'evento requerido'], 400);
+    }
+
+    // ── Gráfico de línea: timer_meta ──────────────────────────────────────
+    $registrosMeta = $em->getRepository(\App\Entity\TimerMeta::class)
+        ->findBy(['evento' => $eventoId], ['numero_vuelta' => 'ASC']);
+
+    $dataMeta = [];
+    foreach ($registrosMeta as $r) {
+        $tiempoStr = $r->getTiempo() ?? '0:00 sg';
+        preg_match('/(\d+):(\d+)/', $tiempoStr, $m);
+        $segundos = isset($m[1]) ? (int)$m[1] * 60 + (int)$m[2] : 0;
+        $dataMeta[] = [
+            'vuelta'            => $r->getNumeroVuelta(),
+            'piloto'            => $r->getPiloto()?->getNombre() ?? 'Sin piloto',
+            'tiempo'            => $tiempoStr,
+            'segundos'          => $segundos,
+            'fecha_inicio_unix' => $r->getFechaInicio()?->getTimestamp(),
+        ];
+    }
+
+    // ── Gráfico de barras: timer_pits ─────────────────────────────────────
+    $registrosPits = $em->getRepository(\App\Entity\TimerPits::class)
+        ->findBy(['evento' => $eventoId], ['numero_vuelta' => 'ASC']);
+
+    $dataPits = [];
+    foreach ($registrosPits as $r) {
+        $tiempoStr = $r->getTiempo() ?? '0:00 sg';
+        preg_match('/(\d+):(\d+)/', $tiempoStr, $m);
+        $segundos = isset($m[1]) ? (int)$m[1] * 60 + (int)$m[2] : 0;
+        $dataPits[] = [
+            'vuelta'   => $r->getNumeroVuelta(),
+            'piloto'   => $r->getPiloto()?->getNombre() ?? 'Sin piloto',
+            'tiempo'   => $tiempoStr,
+            'segundos' => $segundos,
+        ];
+    }
+
+    return new JsonResponse([
+        'meta' => $dataMeta,
+        'pits' => $dataPits,
+    ]);
     }
 }

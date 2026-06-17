@@ -1,24 +1,190 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
+
 {% block head_javascript %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    body { background: #0b0b0b; }
+
+    .informe-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .informe-header h2 {
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+
+    .evento-select {
+        background: #1e1e1e;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 14px;
+        min-width: 220px;
+    }
+
+    .badge-live {
+        background: #ff4d4d;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 20px;
+        letter-spacing: 1px;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .charts-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    .chart-card {
+        background: #1a1a1a;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .chart-card h3 {
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+    }
+
+    .chart-card canvas {
+        width: 100% !important;
+        height: 420px !important;
+    }
+
+    .sin-datos {
+        color: #555;
+        text-align: center;
+        padding: 40px 0;
+        font-size: 14px;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .stat-box {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 16px 24px;
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .stat-box .label {
+        color: #888;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .stat-box .value {
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+        font-family: 'Courier New', monospace;
+    }
+
+    .stat-box .piloto-name {
+        color: #aaa;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .stat-box .value.green  { color: #1fc98a; }
+    .stat-box .value.yellow { color: #f0a500; }
+</style>
 {% endblock %}
 
 {% block main %}
-<div class="row">
-    <div class="col-6">
-        <select class="form-select form-select-sm" aria-label=".form-select-sm example">
-            <option selected>Piloto</option>
-            {% for p in pilotos %}
-            <option value="{{p.id}}">{{p.nombre}}</option>
-            {% endfor %}
-        </select>
+
+<div class="informe-header">
+    <h2>📊 Informe de Evento</h2>
+
+    <select class="evento-select" id="selectEvento" onchange="cargarDatos()">
+        <option value="">— Seleccionar evento —</option>
+        {% for e in eventos %}
+        <option value="{{ e.id }}" {% if e.id == eventoActivo %}selected{% endif %}>
+            Evento #{{ e.id }} — {{ e.fechaRealizacion ? e.fechaRealizacion|date('d/m/Y') : '' }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <span class="badge-live" id="badgeLive" style="display:none;">⬤ EN VIVO</span>
+</div>
+
+<!-- Timer de carrera -->
+<div style="text-align:center; margin-bottom:30px;">
+    <div style="color:white; font-size:16px; font-weight:600; letter-spacing:1px; margin-bottom:8px;">
+        CARRERA
+    </div>
+    <div id="tiempoCarreraInforme" style="font-family:'Courier New', monospace; font-size:50px; font-weight:300; color:white; letter-spacing:4px;">
+        00:00:00
     </div>
 </div>
-<div class="row">
-    <div class="col-12" style="padding: 20px;">
-        <canvas id="chartLine"></canvas>
 
+<!-- Estadísticas rápidas (basadas en META) -->
+<div class="stats-row" id="statsRow" style="display:none;">
+    <div class="stat-box">
+        <div class="label">Total vueltas</div>
+        <div class="value green" id="statVueltas">—</div>
+    </div>
+    <div class="stat-box">
+        <div class="label">Vuelta más rápida</div>
+        <div class="value green" id="statMejor">—</div>
+        <div class="piloto-name" id="statMejorPiloto"></div>
+    </div>
+    <div class="stat-box">
+        <div class="label">Vuelta más lenta</div>
+        <div class="value yellow" id="statPeor">—</div>
+        <div class="piloto-name" id="statPeorPiloto"></div>
+    </div>
+    <div class="stat-box">
+        <div class="label">Pilotos</div>
+        <div class="value" id="statPilotos">—</div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="charts-grid">
+
+    <div class="chart-card">
+        <h3> Tiempo por vuelta (META → META)</h3>
+        <div id="sinDatosLinea" class="sin-datos">Selecciona un evento para ver los datos</div>
+        <canvas id="chartLinea" style="display:none;"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3> Vueltas por piloto (PITS → PITS)</h3>
+        <div id="sinDatosBarra" class="sin-datos">Selecciona un evento para ver los datos</div>
+        <canvas id="chartBarra" style="display:none;"></canvas>
     </div>
 
 </div>
@@ -27,57 +193,270 @@
 
 {% block body_javascript %}
 <script>
-    const ctx = document.getElementById('chartLine');
-    const myChart = new Chart(ctx, {
-        type: 'line', // Specifies a line chart
-        data: {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'], // X-axis labels
-            datasets: [{
-                label: 'Carolina ', // Label for the first line
-                data: [65, 59, 80, 81, 56, 55, 40], // Data points for the first line
-                borderColor: 'rgb(255, 99, 132)', // Line color (e.g., red)
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                yAxisID: 'y', // Assign to the default 'y' axis
-            }, {
-                label: 'Yuly', // Label for the second line
-                data: [28, 48, 40, 19, 86, 27, 90], // Data points for the second line
-                borderColor: 'rgb(54, 162, 235)', // Line color (e.g., blue)
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                yAxisID: 'y1', // Assign to a secondary 'y1' axis
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Tiempos de Pilotos'
-                }
-            },
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    // Grid line settings: only want the grid lines for one axis to show up
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                },
-            }
-        }
+
+    const API_URL = '/cronometros/api/informe-data';
+    const COLORES = [
+        '#1fc98a', '#f0a500', '#3d95ff', '#ff4f4f',
+        '#a78bfa', '#fb923c', '#34d399', '#f472b6'
+    ];
+
+    var chartLinea      = null;
+    var chartBarra      = null;
+    var intervalId      = null;
+    var timerCarreraInt = null;
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var eventoInicial = document.getElementById('selectEvento').value;
+        if (eventoInicial) cargarDatos();
     });
 
+    function cargarDatos() {
+        var eventoId = document.getElementById('selectEvento').value;
+        if (!eventoId) return;
+
+        if (intervalId) clearInterval(intervalId);
+
+        fetchYRenderizar(eventoId);
+        intervalId = setInterval(function() { fetchYRenderizar(eventoId); }, 5000);
+        document.getElementById('badgeLive').style.display = 'inline-block';
+    }
+
+    async function fetchYRenderizar(eventoId) {
+        try {
+            var res  = await fetch(API_URL + '?evento=' + eventoId);
+            var json = await res.json();
+
+            var dataMeta = json.meta || [];
+            var dataPits = json.pits || [];
+
+            renderizarGraficos(dataMeta, dataPits);
+
+            // Timer de carrera: leer desde localStorage si el evento está activo ahora
+            if (timerCarreraInt) clearInterval(timerCarreraInt);
+                var inicioUnix = localStorage.getItem('carrera_inicio_unix');
+            if (inicioUnix) {
+                var inicioMs = parseInt(inicioUnix) * 1000;
+                timerCarreraInt = setInterval(function() {
+                    var seg = Math.floor((Date.now() - inicioMs) / 1000);
+                    var h = String(Math.floor(seg / 3600)).padStart(2, '0');
+                    var m = String(Math.floor((seg % 3600) / 60)).padStart(2, '0');
+                    var s = String(seg % 60).padStart(2, '0');
+                    document.getElementById('tiempoCarreraInforme').textContent = h + ':' + m + ':' + s;
+                }, 1000);
+            } else {
+                document.getElementById('tiempoCarreraInforme').textContent = '00:00:00';
+            }
+        }
+    }
+    
+    function renderizarGraficos(dataMeta, dataPits) {
+
+        // ── Gráfico de línea (META) ───────────────────────────────────────────
+        if (!dataMeta || dataMeta.length === 0) {
+            document.getElementById('sinDatosLinea').style.display = 'block';
+            document.getElementById('chartLinea').style.display    = 'none';
+            document.getElementById('statsRow').style.display      = 'none';
+        } else {
+            document.getElementById('sinDatosLinea').style.display = 'none';
+            document.getElementById('chartLinea').style.display    = 'block';
+            document.getElementById('statsRow').style.display      = 'flex';
+            actualizarStats(dataMeta);
+            renderizarLinea(dataMeta);
+        }
+
+        // ── Gráfico de barras (PITS) ──────────────────────────────────────────
+        if (!dataPits || dataPits.length === 0) {
+            document.getElementById('sinDatosBarra').style.display = 'block';
+            document.getElementById('chartBarra').style.display    = 'none';
+        } else {
+            document.getElementById('sinDatosBarra').style.display = 'none';
+            document.getElementById('chartBarra').style.display    = 'block';
+            renderizarBarra(dataPits);
+        }
+    }
+
+    function actualizarStats(data) {
+        var segundos = data.map(function(d) { return d.segundos; });
+        var minSeg   = Math.min.apply(null, segundos);
+        var maxSeg   = Math.max.apply(null, segundos);
+        var mejor    = data.find(function(d) { return d.segundos === minSeg; });
+        var peor     = data.find(function(d) { return d.segundos === maxSeg; });
+        var pilotos  = (new Set(data.map(function(d) { return d.piloto; }))).size;
+
+        document.getElementById('statVueltas').textContent     = data.length;
+        document.getElementById('statMejor').textContent       = formatSegundos(minSeg);
+        document.getElementById('statMejorPiloto').textContent = mejor ? '👤 ' + mejor.piloto + ' — V' + mejor.vuelta : '';
+        document.getElementById('statPeor').textContent        = formatSegundos(maxSeg);
+        document.getElementById('statPeorPiloto').textContent  = peor  ? '👤 ' + peor.piloto  + ' — V' + peor.vuelta  : '';
+        document.getElementById('statPilotos').textContent     = pilotos;
+    }
+
+    function formatSegundos(seg) {
+        var m = Math.floor(seg / 60);
+        var s = String(seg % 60).padStart(2, '0');
+        return m + ':' + s;
+    }
+
+    function renderizarLinea(data) {
+        var pilotoMap = {};
+        data.forEach(function(d) {
+            if (!pilotoMap[d.piloto]) pilotoMap[d.piloto] = [];
+            pilotoMap[d.piloto].push({ x: d.vuelta, y: d.segundos, tiempo: d.tiempo });
+        });
+
+        var maxVuelta = Math.max.apply(null, data.map(function(d) { return d.vuelta; }));
+        var labels = [];
+        for (var i = 1; i <= maxVuelta; i++) labels.push('V' + i);
+
+        var datasets = Object.keys(pilotoMap).map(function(nombre, idx) {
+            var color   = COLORES[idx % COLORES.length];
+            var valores = new Array(maxVuelta).fill(null);
+            var tiempos = new Array(maxVuelta).fill(null);
+            pilotoMap[nombre].forEach(function(p) {
+                valores[p.x - 1] = p.y;
+                tiempos[p.x - 1] = p.tiempo;
+            });
+            return {
+                label: nombre,
+                data: valores,
+                tiempos: tiempos,
+                borderColor: color,
+                backgroundColor: color + '33',
+                pointBackgroundColor: color,
+                pointRadius: 6,
+                pointHoverRadius: 9,
+                tension: 0.3,
+                spanGaps: false,
+            };
+        });
+
+        if (chartLinea) {
+            chartLinea.data.labels   = labels;
+            chartLinea.data.datasets = datasets;
+            chartLinea.update();
+        } else {
+            chartLinea = new Chart(document.getElementById('chartLinea'), {
+                type: 'line',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 13 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var t = ctx.dataset.tiempos && ctx.dataset.tiempos[ctx.dataIndex];
+                                    return ' ' + ctx.dataset.label + ': ' + (t || formatSegundos(ctx.parsed.y));
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#aaa', font: { size: 13 } },
+                            grid:  { color: '#2a2a2a' },
+                            title: { display: true, text: 'Vuelta', color: '#aaa', font: { size: 13 } }
+                        },
+                        y: {
+                            ticks: { color: '#aaa', font: { size: 13 }, callback: function(v) { return formatSegundos(v); } },
+                            grid:  { color: '#2a2a2a' },
+                            title: { display: true, text: 'Tiempo (M:S)', color: '#aaa', font: { size: 13 } }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function renderizarBarra(data) {
+        var pilotoMap = {};
+        data.forEach(function(d) {
+            if (!pilotoMap[d.piloto]) pilotoMap[d.piloto] = [];
+            pilotoMap[d.piloto].push({ vuelta: d.vuelta, segundos: d.segundos, tiempo: d.tiempo });
+        });
+
+        var pilotos    = Object.keys(pilotoMap);
+        var maxVueltas = Math.max.apply(null, Object.values(pilotoMap).map(function(v) { return v.length; }));
+
+        var datasets = [];
+        for (var i = 0; i < maxVueltas; i++) {
+            var color = COLORES[i % COLORES.length];
+            var idx   = i;
+            datasets.push({
+                label: 'Vuelta ' + (i + 1),
+                data:    pilotos.map(function(p) { var v = pilotoMap[p][idx]; return v ? v.segundos : 0; }),
+                tiempos: pilotos.map(function(p) { var v = pilotoMap[p][idx]; return v ? v.tiempo   : null; }),
+                backgroundColor: color + 'cc',
+                borderColor: color,
+                borderWidth: 1,
+                borderRadius: 3,
+            });
+        }
+
+        if (chartBarra) {
+            chartBarra.data.labels   = pilotos;
+            chartBarra.data.datasets = datasets;
+            chartBarra.update();
+        } else {
+            chartBarra = new Chart(document.getElementById('chartBarra'), {
+                type: 'bar',
+                data: { labels: pilotos, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(items) { return 'Piloto: ' + items[0].label; },
+                                label: function(ctx) {
+                                    var t = ctx.dataset.tiempos && ctx.dataset.tiempos[ctx.dataIndex];
+                                    if (!t) return null;
+                                    return ' ' + ctx.dataset.label + ': ' + t;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { color: 'white', font: { size: 13, weight: 'bold' } },
+                            grid:   { color: '#2a2a2a' },
+                            title:  { display: true, text: 'Pilotos', color: '#aaa', font: { size: 13 } }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: { color: '#aaa', font: { size: 13 }, callback: function(v) { return formatSegundos(v); } },
+                            grid:  { color: '#2a2a2a' },
+                            title: { display: true, text: 'Tiempo en PITS (M:S)', color: '#aaa', font: { size: 13 } }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'barLabels',
+                    afterDatasetsDraw: function(chart) {
+                        var ctx2 = chart.ctx;
+                        chart.data.datasets.forEach(function(dataset, i) {
+                            var meta = chart.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, j) {
+                                var val = dataset.data[j];
+                                if (!val) return;
+                                ctx2.save();
+                                ctx2.fillStyle = 'white';
+                                ctx2.font = 'bold 13px Arial';
+                                ctx2.textAlign = 'center';
+                                ctx2.textBaseline = 'middle';
+                                var props = bar.getProps(['x', 'y', 'height']);
+                                if (props.height > 18) ctx2.fillText(i + 1, props.x, props.y + props.height / 2);
+                                ctx2.restore();
+                            });
+                        });
+                    }
+                }]
+            });
+        }
+    }
 
 </script>
-
 {% endblock %}
