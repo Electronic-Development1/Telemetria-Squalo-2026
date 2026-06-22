@@ -112,9 +112,9 @@ class EventoCrudController extends AbstractCrudController
         $fechaFinal   = $request->request->get('fecha_final');
         $eventoActivo = $request->request->get('eventoActivo');
 
-        $piloto      = $pilotoId     ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoId)     : null;
-        $pilotoEntra = $pilotoEntraId ? $em->getRepository(\App\Entity\Piloto::class)->find($pilotoEntraId) : null;
-        $evento      = $eventoActivo ? $em->getRepository(\App\Entity\Evento::class)->find($eventoActivo)  : null;
+        $piloto      = $pilotoId     ? $em->getRepository(Piloto::class)->find($pilotoId)     : null;
+        $pilotoEntra = $pilotoEntraId ? $em->getRepository(Piloto::class)->find($pilotoEntraId) : null;
+        $evento      = $eventoActivo ? $em->getRepository(Evento::class)->find($eventoActivo)  : null;
 
         $dtInicio = new \DateTime($fechaInicio);
         $dtFinal  = new \DateTime($fechaFinal);
@@ -163,8 +163,7 @@ public function informeData(ManagerRegistry $doctrine, Request $request): JsonRe
         return new JsonResponse(['error' => 'evento requerido'], 400);
     }
 
-    // ── Gráfico de línea: timer_meta ──────────────────────────────────────
-    $registrosMeta = $em->getRepository(\App\Entity\TimerMeta::class)
+    $registrosMeta = $em->getRepository(TimerPiloto::class)
         ->findBy(['evento' => $eventoId], ['numero_vuelta' => 'ASC']);
 
     $dataMeta = [];
@@ -182,7 +181,7 @@ public function informeData(ManagerRegistry $doctrine, Request $request): JsonRe
     }
 
     // ── Gráfico de barras: timer_pits ─────────────────────────────────────
-    $registrosPits = $em->getRepository(\App\Entity\TimerPits::class)
+    $registrosPits = $em->getRepository(TimerPiloto::class)
         ->findBy(['evento' => $eventoId], ['numero_vuelta' => 'ASC']);
 
     $dataPits = [];

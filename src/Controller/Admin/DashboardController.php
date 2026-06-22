@@ -68,11 +68,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(PilotoCrudController::class, 'Piloto', 'fa fa-tags');
         yield MenuItem::linkTo(TimerPilotoCrudController::class, 'Tiempos de Piloto', 'fa fa-tags');
 
-        yield MenuItem::subMenu('-------', 'fa fa-clock-o')->setSubItems([
-            MenuItem::linkTo(TimerMetaCrudController::class, 'META', 'fa fa-flag'),
-            MenuItem::linkTo(TimerPitsCrudController::class, 'PITS', 'fa fa-wrench'),
-            MenuItem::linkTo(TimerCambioCrudController::class, 'Cambio de Piloto', 'fa fa-user'),
-            MenuItem::linkTo(TimerDanosCrudController::class, 'Daños', 'fa fa-warning'),
-        ]);
+       
     }
 }

@@ -134,7 +134,7 @@
         background: #1a1a1a;
         border-radius: 16px;
         padding: 20px;
-        box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .vueltas-card h3 {
@@ -199,7 +199,8 @@
         <div style="color:white; font-size:18px; font-weight:600; margin-bottom:10px; letter-spacing:1px;">
             TIEMPO TOTAL DE ENTRENAMIENTO
         </div>
-        <div id="tiempoCarrera" style="font-family:'Courier New', monospace; font-size:50px; font-weight:300; color:white; letter-spacing:4px;">
+        <div id="tiempoCarrera"
+            style="font-family:'Courier New', monospace; font-size:50px; font-weight:300; color:white; letter-spacing:4px;">
             00:00:00
         </div>
     </div>
@@ -280,7 +281,8 @@
     let timerCarrera = new easytimer.Timer();
     let carreraIniciada = false;
 
-    const urlCompleta = '/cronometros/api/timer';
+    const urlCompleta = 'http://localhost/squalo/public/index.php/cronometros/api/timer';
+
     const eventoActivo = '{{ eventoActivo }}';
 
     const metaTimer = new easytimer.Timer();
@@ -351,15 +353,15 @@
             + metaTimer.getTimeValues().minutes * 60
             + metaTimer.getTimeValues().hours * 3600;
         const min = Math.floor(seg / 60);
-        const s   = String(seg % 60).padStart(2, '0');
+        const s = String(seg % 60).padStart(2, '0');
         const tiempoVuelta = `${min}:${s}`;
 
         const datos = {
-            piloto:       piloto,
+            piloto: piloto,
             numeroVuelta: contadorVueltas,
-            cronometro:   'Meta',
+            cronometro: 'Meta',
             fecha_inicio: metaInicio,
-            fecha_final:  fechaFinal,
+            fecha_final: fechaFinal,
             eventoActivo: eventoActivo
         };
 
@@ -380,34 +382,34 @@
     }
 
     function terminarEvento() {
-    if (confirm("¿Seguro que deseas finalizar el evento?")) {
+        if (confirm("¿Seguro que deseas finalizar el evento?")) {
 
-        const tiempoTotal = timerCarrera.getTimeValues().toString();
-        const totalVueltas = contadorVueltas - 1;
+            const tiempoTotal = timerCarrera.getTimeValues().toString();
+            const totalVueltas = contadorVueltas - 1;
 
-        timerCarrera.stop();
+            timerCarrera.stop();
 
-        metaTimer.stop();
-        metaTimer.reset();
-        metaTimer.stop();
+            metaTimer.stop();
+            metaTimer.reset();
+            metaTimer.stop();
 
-        metaInicio = null;
-        carreraIniciada = false;
-        contadorVueltas = 1;
+            metaInicio = null;
+            carreraIniciada = false;
+            contadorVueltas = 1;
 
-        $("#chronoMeta").html("00:00:00");
-        $("#tiempoCarrera").html(tiempoTotal);
+            $("#chronoMeta").html("00:00:00");
+            $("#tiempoCarrera").html(tiempoTotal);
 
-        $("#labelContador").html("Vuelta actual: 1");
-        $("#pilotoMeta").val("");
+            $("#labelContador").html("Vuelta actual: 1");
+            $("#pilotoMeta").val("");
 
-        alert(
-            "Evento finalizado\n\n" +
-            "Tiempo total: " + tiempoTotal +
-            "\nTotal vueltas: " + totalVueltas
-        );
+            alert(
+                "Evento finalizado\n\n" +
+                "Tiempo total: " + tiempoTotal +
+                "\nTotal vueltas: " + totalVueltas
+            );
+        }
     }
-}
 </script>
 
 {% endblock %}
